@@ -19,11 +19,11 @@ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O p
 ## 📑 *Índice*
 
 1. [📅 **Tabelas do sistema**](#-colaboradores)
-    - [Usuários]()
-    - [Logs de usuários]()
+    - [Usuários](#usu%C3%A1rios)
+    - [Logs de usuários](#logs-de-usu%C3%A1rio)
 2. [🌐 **Conexão**](#-conex%C3%A3o)
 3. [💻 **Telas**](#-telas)
-    - [Login]()
+    - [Login](#login)
 
 ## 📅 *TABELAS DO SISTEMA*
 
