@@ -1,19 +1,30 @@
 from tkinter import *
+from tkinter import messagebox
 
 width = 400
 height = 300
 
-def abreLogin():
+def abreLogin(connection):
     returnValue = -1
 
     def login():
         nonlocal returnValue
         usuario = Nome.get()
         senha = Senha.get()
-        print(f"Usuário: {usuario}, Senha: {senha}")  # 
-        returnValue = 1
-        window.quit()
-        window.destroy()
+        
+        cursor = connection.cursor()
+        cursor.execute("SELECT login, password FROM Users")
+        users = cursor.fetchall()
+
+        for user in users:
+            login, password = user
+            if login == usuario and password == senha:
+                returnValue = 1
+                window.quit()
+                window.destroy()
+                return
+        
+        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.");
 
     def sair():
         nonlocal returnValue
@@ -50,5 +61,5 @@ def abreLogin():
     bSair.grid(row=3, column=1, padx=10, sticky="w")
 
     window.mainloop()
-    
+
     return returnValue
