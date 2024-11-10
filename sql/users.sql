@@ -79,7 +79,50 @@ BEGIN
         RETURN NEW;
 
     ELSEIF TG_OP = 'DELETE' THEN
-        DELETE FROM Users WHERE idoriginal = OLD.driverid;
+        DELETE FROM Users WHERE idoriginal = OLD.driverid AND tipo = 'Piloto';
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP FUNCTION IF EXISTS atualizaEscuderia();
+CREATE OR REPLACE FUNCTION atualizaEscuderia() RETURNS TRIGGER AS $$
+DECLARE
+    i INTEGER := 0;
+    id_original INTEGER;
+    constructor_id INTEGER;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        SELECT userid INTO i
+        FROM Users
+        ORDER BY userid DESC
+        LIMIT 1;
+
+        i := i + 1;
+
+        INSERT INTO Users (userid, login, password, tipo, idoriginal) VALUES (i, NEW.constructorref || '_c', md5(NEW.constructorref || '_c'), 'Escuderia', NEW.constructorid);
+
+        RETURN NEW;
+
+    ELSEIF TG_OP = 'UPDATE' THEN
+        SELECT userid, NEW.constructorid INTO i, constructor_id
+        FROM Users
+        WHERE idoriginal = NEW.constructorid AND
+              tipo = 'Escuderia';
+
+        RAISE NOTICE 'Userid encontrado no update: (%,%)', i, constructor_id;
+
+        UPDATE Users
+        SET 
+            login = NEW.constructorref || '_c',
+            password = md5(NEW.constructorref || '_c'),
+            idoriginal = NEW.constructorid
+        WHERE userid = i; 
+
+        RETURN NEW;
+
+    ELSEIF TG_OP = 'DELETE' THEN
+        DELETE FROM Users WHERE idoriginal = OLD.constructorid AND tipo = 'Escuderia';
         RETURN OLD;
     END IF;
 END;
@@ -88,3 +131,7 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS TR_atualizaPiloto ON Driver;
 CREATE OR REPLACE TRIGGER TR_atualizaPiloto AFTER DELETE OR INSERT OR UPDATE ON Driver
 FOR EACH ROW EXECUTE FUNCTION atualizaPiloto();
+
+DROP TRIGGER IF EXISTS TR_atualizaEscuderia ON Constructors;
+CREATE OR REPLACE TRIGGER TR_atualizaEscuderia AFTER DELETE OR INSERT OR UPDATE ON Constructors
+FOR EACH ROW EXECUTE FUNCTION atualizaEscuderia();
