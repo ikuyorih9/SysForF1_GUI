@@ -11,12 +11,12 @@
 
 Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O projeto é proposto para a disciplina Laboratório de Base de Dados (SCC0641).
 
-## 🤓 *Colaboradores:*
+# 🤓 *Colaboradores:*
 - [*Guilherme Castanon Silva Pereira*](https://github.com/GuilhermeCastanon);
 - [*Hugo Hiroyuki Nakamura*](https://github.com/ikuyorih9);
 - [*Isaac Santos Soares*](https://github.com/ISS2718);
 
-## 📑 *Índice*
+# 📑 *Índice*
 
 1. [📅 **Tabelas do sistema**](#-colaboradores)
     - [Usuários](#usu%C3%A1rios)
@@ -25,7 +25,7 @@ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O p
 3. [💻 **Telas**](#-telas)
     - [Login](#login)
 
-## 📅 *TABELAS DO SISTEMA*
+# 📅 *TABELAS DO SISTEMA*
 
 ### *Usuários:*
 
@@ -197,7 +197,7 @@ def registraLogin(userid):
     connection.commit()
 ```
 
-## 🌐 *CONEXÃO*
+# 🌐 *CONEXÃO*
 
 Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
 
@@ -233,7 +233,7 @@ cursor.execute("comando SQL")
 connection.commit() # Para casos de insert, update ou delete.
 ```
 
-## 💻 *TELAS*
+# 💻 *TELAS*
 
 ### *Login:*
 
