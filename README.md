@@ -16,14 +16,14 @@ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O p
 - [*Hugo Hiroyuki Nakamura*](https://github.com/ikuyorih9);
 - [*Isaac Santos Soares*](https://github.com/ISS2718);
 
-## 📑 *Índice:*
+## 📑 *Índice*
 
-1. 📅 **Tabelas do sistema**
-    - Usuários
-    - Logs de usuários
-2. 🌐 **Conexão**
-3. 💻 **Telas**
-    - Login
+1. [📅 **Tabelas do sistema**](#-colaboradores)
+    - [Usuários]()
+    - [Logs de usuários]()
+2. [🌐 **Conexão**](#-conex%C3%A3o)
+3. [💻 **Telas**](#-telas)
+    - [Login]()
 
 ## 📅 *TABELAS DO SISTEMA*
 
