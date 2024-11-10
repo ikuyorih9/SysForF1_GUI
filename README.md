@@ -18,9 +18,16 @@ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O p
 
 ## 📑 *Índice:*
 
-## ⚙️ *Estrutura e funcionamento:*
+1. 📅 **Tabelas do sistema**
+    - Usuários
+    - Logs de usuários
+2. 🌐 **Conexão**
+3. 💻 **Telas**
+    - Login
 
-### *Usuários*
+## 📅 *TABELAS DO SISTEMA*
+
+### *Usuários:*
 
 Os usuários cadastrados no sistema devem ser salvos em uma tabela *Users*, contando com seu `userid` no sistema, seu `login`, `senha`, `tipo`, que pode ser 'Administrador', 'Escuderia' ou 'Piloto', `idoriginal`, que é o id na tabela original.
 
@@ -168,29 +175,92 @@ CREATE OR REPLACE TRIGGER TR_atualizaEscuderia AFTER DELETE OR INSERT OR UPDATE 
 FOR EACH ROW EXECUTE FUNCTION atualizaEscuderia();
 ```
 
-### *Telas e conexão:*
+### *Logs de usuário:*
 
-A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-ser criar telas, labels, botões etc. Os comandos SQL são realizados através do pacote **Psycopg2**.
+Quando um usuário entra no sistema, sua conexão é registrada. Para isso, cria-se uma tabela ***Log_Table***, que armazena o seu `userid` e a `data` da conexão.
+
+```
+CREATE TABLE IF NOT EXISTS Log_Table(
+    userid INTEGER,
+    data TIMESTAMP,
+    CONSTRAINT PK_LOG PRIMARY KEY (userid, data)
+);
+```
+
+Quando um usuário faz o login no sistema, a função `registraLogin(userid)` é executada. Ela obtém a data/hora atual e realiza a inserção das informações necessárias na tabela. 
+
+```
+def registraLogin(userid):
+    data = datetime.now()
+    print(data)
+    cursor.execute("INSERT INTO Log_Table(userid, data) VALUES (%s,%s);", (userid, data))
+    connection.commit()
+```
+
+## 🌐 *CONEXÃO*
+
+Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
+
+```
+[postgresql]
+dbname = Grupo2
+user = Grupo2
+password = grupo2-Hugo
+host = 143.107.183.82
+port = 5432
+```
+
+A conexão, portanto, é feita abrindo esse arquivo e utilizando a função `psycopg2.connect()`.
+
+```
+config = configparser.ConfigParser()
+config.read('database.ini')
+
+connection = psycopg2.connect(
+    dbname = config['postgresql']['dbname'],
+    user = config['postgresql']['user'],
+    password = config['postgresql']['password'],
+    host = config['postgresql']['host'],
+    port = config['postgresql']['port']
+)
+```
+
+Os comandos SQL são executados através de um cursor, que executa a função `execute()`.
+
+```
+cursor = connection.cursor()
+cursor.execute("comando SQL")
+connection.commit() # Para casos de insert, update ou delete.
+```
+
+## 💻 *TELAS*
+
+### *Login:*
+
+A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-ser criar telas, labels, botões etc.
 
 A tela de ***Login*** apresenta um campo de *usuário* e de *senha*, e aguarda o botão de *sign in* para confirmar o acesso. A função executada pelo botão é a `login()`, que busca o login e senha da tabela ***Users*** e compara com o texto dos campos. Se o usuário estiver cadastrado, a próxima tela deve aparecer. Caso a correspondência seja falsa, uma *messagebox* é acionada para o login inválido.
 
 ```
 def login():
         nonlocal returnValue
+        nonlocal usuario
+
         usuario = Nome.get()
         senha = hashlib.md5(Senha.get().encode()).hexdigest()
         
-        cursor = connection.cursor()
-        cursor.execute("SELECT login, password FROM Users")
+        cursor.execute("SELECT userid, login, password FROM Users")
         users = cursor.fetchall()
 
         for user in users:
-            login, password = user
+            userid, login, password = user
             if login == usuario and password == senha:
+                registraLogin(userid)
+
                 returnValue = 1
                 window.quit()
                 window.destroy()
                 return
         
-        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.");
+        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 ```

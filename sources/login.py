@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from datetime import datetime
 import hashlib
 
 width = 400
@@ -7,25 +8,36 @@ height = 300
 
 def abreLogin(connection):
     returnValue = -1
+    usuario = ""
+    cursor = connection.cursor()
+
+    def registraLogin(userid):
+        data = datetime.now()
+        print(data)
+        cursor.execute("INSERT INTO Log_Table(userid, data) VALUES (%s,%s);", (userid, data))
+        connection.commit()
 
     def login():
         nonlocal returnValue
+        nonlocal usuario
+
         usuario = Nome.get()
         senha = hashlib.md5(Senha.get().encode()).hexdigest()
         
-        cursor = connection.cursor()
-        cursor.execute("SELECT login, password FROM Users")
+        cursor.execute("SELECT userid, login, password FROM Users")
         users = cursor.fetchall()
 
         for user in users:
-            login, password = user
+            userid, login, password = user
             if login == usuario and password == senha:
+                registraLogin(userid)
+
                 returnValue = 1
                 window.quit()
                 window.destroy()
                 return
         
-        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.");
+        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 
     def sair():
         nonlocal returnValue
@@ -61,6 +73,7 @@ def abreLogin(connection):
     bSair = Button(fButtons, text="Sair", command = sair) 
     bSair.grid(row=3, column=1, padx=10, sticky="w")
 
+    window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()
 
-    return returnValue
+    return [returnValue, usuario]
