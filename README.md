@@ -4,8 +4,8 @@
     <img src="https://img.shields.io/badge/Language-Python_3.12.7-gray?style=flat&labelColor=blue&link=https%3A%2F%2Fwww.postgresql.org%2F"/>
     <img src="https://img.shields.io/badge/Database-PostgreSQL-gray?style=flat&labelColor=yellow&link=https%3A%2F%2Fwww.postgresql.org%2F"/>
     <img src="https://img.shields.io/badge/GUI_Package-Tkinter-gray?style=flat&labelColor=purple&link=https%3A%2F%2Fdocs.python.org%2F3%2Flibrary%2Ftkinter.html"/>
-    <img src="https://img.shields.io/badge/SQL_Package-Psycopg2-gray?style=flat&labelColor=purple&link=https%3A%2F%2Fimg.shields.io%2Fbadge%2FLanguage-Python_3.12.7-gray%3Fstyle%3Dflat%26labelColor%3Dblue%26link%3Dhttps%253A%252F%252Fwww.postgresql.org%252F
-    "/>
+    <img alt="Static Badge" src="https://img.shields.io/badge/SQL_Package-Psycopg2-gray?style=flat&labelColor=purple&link=https%3A%2F%2Fimg.shields.io%2Fbadge%2FLanguage-Python_3.12.7-gray%3Fstyle%3Dflat%26labelColor%3Dblue%26link%3Dhttps%253A%252F%252Fwww.postgresql.org%252F">
+
 </p>
 
 
