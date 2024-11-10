@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import hashlib
 
 width = 400
 height = 300
@@ -10,7 +11,7 @@ def abreLogin(connection):
     def login():
         nonlocal returnValue
         usuario = Nome.get()
-        senha = Senha.get()
+        senha = hashlib.md5(Senha.get().encode()).hexdigest()
         
         cursor = connection.cursor()
         cursor.execute("SELECT login, password FROM Users")
