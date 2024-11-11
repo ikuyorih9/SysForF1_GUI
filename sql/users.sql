@@ -149,38 +149,11 @@ CREATE TABLE IF NOT EXISTS Log_Table(
     CONSTRAINT PK_LOG PRIMARY KEY (userid, data)
 );
 
-SELECT * FROM Log_Table;
-
-SELECT * FROM USERS;
-
-SELECT forename, surname, name
-FROM Driver, Constructos
-WHERE driverid = 13 AND 
-
-SELECT * FROM DRIVER;
-SELECT * FROM PITSTOPS;
-SELECT * FROM DRIVERSTANDINGS;
-SELECT * FROM Results;
-SELECT * FROM CONSTRUCTORS;
-
-SELECT * FROM Results WHERE driverid = 1;
-
-SELECT driverid, constructorid
-FROM Races, Driver, Constructor, Results
-WHERE 
-
-SELECT R.raceid, year, name
-FROM Results Re, Races R
-WHERE driverid = 1 AND Re.raceid = R.raceid;
-
-SELECT DISTINCT Constructors.name, Races.year
-FROM Results, Constructors, Races
-WHERE Results.driverid = 159 AND
-      Results.constructorid = Constructors.constructorid AND
-      Results.raceid = Races.raceid
-ORDER BY Races.year DESC;
-
-SELECT forename || ' ' || surname FROM Driver WHERE driverid = 13;
+SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
+FROM Results 
+    JOIN Constructors ON Results.constructorid = Constructors.constructorid 
+    JOIN Races ON Results.raceid = Races.raceid
+WHERE Results.driverid = %s;
 
 SELECT Races.year, Circuits.name AS circuito, 
             SUM(Results.points) AS total_pontos, 
@@ -192,6 +165,7 @@ SELECT Races.year, Circuits.name AS circuito,
         GROUP BY Races.year, Circuits.name
         ORDER BY Races.year, Circuits.name;
 
+-- Seleciona os pilotos de cada escuderia.
 SELECT constructorid, COUNT(DISTINCT driverid)
 FROM RESULTS, RACES
 WHERE Races.raceid = Results.raceid AND
@@ -205,16 +179,4 @@ WHERE Races.raceid = Results.raceid AND
 GROUP BY constructorid
 ORDER BY constructorid;
 
--- Ultimo ano que um piloto correu.
-SELECT DISTINCT driverid, MAX(year)
-FROM RESULTS, RACES
-WHERE Races.raceid = Results.raceid
-GROUP BY (driverid)
-ORDER BY driverid;
 
-SELECT DISTINCT ON (driverid, constructorid)driverid, constructorid, year
-FROM RESULTS, RACES
-WHERE Races.raceid = Results.raceid
-ORDER BY driverid, constructorid, year DESC;
-
-SELECT * FROM USERS WHERE tipo = 'Escuderia';
