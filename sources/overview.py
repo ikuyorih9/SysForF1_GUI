@@ -79,7 +79,45 @@ def abreOverviewPiloto(connection, window, usuario):
     window.mainloop()
 
 def abreOverviewEscuderia(connection, window, usuario):
-    return None
+
+    
+    cursor = connection.cursor()
+    # Busca o nome completo do piloto a partir do seu id original.
+    cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
+    nome = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT constructorid, COUNT(DISTINCT driverid)
+        FROM RESULTS, RACES
+        WHERE Races.raceid = Results.raceid AND
+            Results.constructorid = %s AND
+            (driverid, year) IN (
+                SELECT DISTINCT driverid, MAX(year)
+                FROM RESULTS, RACES
+                WHERE Races.raceid = Results.raceid
+                GROUP BY (driverid)
+                ORDER BY driverid
+            )
+        GROUP BY constructorid
+        ORDER BY constructorid;
+    """, (usuario.idoriginal,))
+
+    qtdPilotos = cursor.fetchone()[1]
+
+    # Adiciona label de usuário na tela.
+    Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    Label(window, text=usuario.login).grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+    # Adiciona label de nome na tela.
+    Label(window, text="Nome: ").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    Label(window, text=nome).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+
+    # Adiciona label de quantidade de pilotos na tela.
+    Label(window, text="Quantidade de pilotos: ").grid(row=2, column=0, padx=5, sticky="w")
+    Label(window, text=str(qtdPilotos)).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+
+    window.mainloop()
+
 
 def abreOverviewAdministrador(connection, window, usuario):
     return None
