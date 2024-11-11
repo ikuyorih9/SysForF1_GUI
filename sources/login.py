@@ -8,7 +8,7 @@ height = 300
 
 def abreLogin(connection):
     returnValue = -1
-    usuario = ""
+    userid = -1
     cursor = connection.cursor()
 
     def registraLogin(userid):
@@ -19,23 +19,20 @@ def abreLogin(connection):
 
     def login():
         nonlocal returnValue
-        nonlocal usuario
+        nonlocal userid
 
         usuario = Nome.get()
         senha = hashlib.md5(Senha.get().encode()).hexdigest()
         
-        cursor.execute("SELECT userid, login, password FROM Users")
-        users = cursor.fetchall()
+        cursor.execute("SELECT userid FROM Users WHERE login = %s AND password = %s;", (usuario, senha))
+        userid = cursor.fetchone()[0]
 
-        for user in users:
-            userid, login, password = user
-            if login == usuario and password == senha:
-                registraLogin(userid)
-
-                returnValue = 1
-                window.quit()
-                window.destroy()
-                return
+        if userid:
+            registraLogin(userid)
+            returnValue = 1
+            window.quit()
+            window.destroy()
+            return
         
         messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 
@@ -76,4 +73,4 @@ def abreLogin(connection):
     window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()
 
-    return [returnValue, usuario]
+    return [returnValue, userid]

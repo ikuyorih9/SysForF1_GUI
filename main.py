@@ -1,8 +1,8 @@
 from sources import login
+from sources import overview
+from sources import user
 import psycopg2
 import configparser
-
-usuario = ""
 
 try:
     # ESTABELECE A CONEXÃO COM A BASE DE DADOS
@@ -17,14 +17,17 @@ try:
         port = config['postgresql']['port']
     )
 
-    proximaJanela, usuario = login.abreLogin(connection)
-    print(proximaJanela)
-    print(usuario)
+    proximaJanela, userid = login.abreLogin(connection)
+    usuario = user.carregaInfoUsuario(userid, connection)
+    
+    if(proximaJanela == 1):
+        overview.abreOverview(connection, usuario)
     
     if proximaJanela == 0:
         print("Fechar janela!")
-        
 
+except psycopg2.OperationalError as error:
+    print("Erro de conexão:", error)
 
 except Exception as error:
-    print("Erro ao conectar com o postgreSQL:", error)
+    print("Erro generico:", error)

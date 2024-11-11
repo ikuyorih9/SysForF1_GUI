@@ -152,3 +152,32 @@ CREATE TABLE IF NOT EXISTS Log_Table(
 SELECT * FROM Log_Table;
 
 SELECT * FROM USERS;
+
+SELECT forename, surname, name
+FROM Driver, Constructos
+WHERE driverid = 13 AND 
+
+SELECT * FROM DRIVER;
+SELECT * FROM PITSTOPS;
+SELECT * FROM DRIVERSTANDINGS;
+SELECT * FROM Results;
+SELECT * FROM CONSTRUCTORS;
+
+SELECT * FROM Results WHERE driverid = 1;
+
+SELECT driverid, constructorid
+FROM Races, Driver, Constructor, Results
+WHERE 
+
+SELECT R.raceid, year, name
+FROM Results Re, Races R
+WHERE driverid = 1 AND Re.raceid = R.raceid;
+
+SELECT DISTINCT Constructors.name, Races.year
+FROM Results, Constructors, Races
+WHERE Results.driverid = 159 AND
+      Results.constructorid = Constructors.constructorid AND
+      Results.raceid = Races.raceid
+ORDER BY Races.year DESC;
+
+SELECT forename || ' ' || surname FROM Driver WHERE driverid = 13;
