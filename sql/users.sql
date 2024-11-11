@@ -181,3 +181,30 @@ WHERE Results.driverid = 159 AND
 ORDER BY Races.year DESC;
 
 SELECT forename || ' ' || surname FROM Driver WHERE driverid = 13;
+
+SELECT constructorid, COUNT(DISTINCT driverid)
+FROM RESULTS, RACES
+WHERE Races.raceid = Results.raceid AND
+      (driverid, year) IN (
+        SELECT DISTINCT driverid, MAX(year)
+        FROM RESULTS, RACES
+        WHERE Races.raceid = Results.raceid
+        GROUP BY (driverid)
+        ORDER BY driverid
+      )
+GROUP BY constructorid
+ORDER BY constructorid;
+
+-- Ultimo ano que um piloto correu.
+SELECT DISTINCT driverid, MAX(year)
+FROM RESULTS, RACES
+WHERE Races.raceid = Results.raceid
+GROUP BY (driverid)
+ORDER BY driverid;
+
+SELECT DISTINCT ON (driverid, constructorid)driverid, constructorid, year
+FROM RESULTS, RACES
+WHERE Races.raceid = Results.raceid
+ORDER BY driverid, constructorid, year DESC;
+
+SELECT * FROM USERS WHERE tipo = 'Escuderia';
