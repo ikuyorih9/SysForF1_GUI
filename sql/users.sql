@@ -180,3 +180,5 @@ GROUP BY constructorid
 ORDER BY constructorid;
 
 
+SELECT userid FROM Users WHERE login = 'admin' AND password = md5('admin');
+SELECT * FROM USERS ORDER BY userid;

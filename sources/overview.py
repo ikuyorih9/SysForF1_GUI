@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 from sources import user
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
 
 width = 400
 height = 300
@@ -26,21 +28,22 @@ def abreOverviewPiloto(connection, window, usuario):
 
         # Busca a última escuderia que o piloto esteve associado (último ano que competiu)
         cursor.execute("""
-        SELECT DISTINCT Constructors.name, Races.year 
-        FROM Results, Constructors, Races 
-        WHERE Results.driverid = %s AND 
-              Results.constructorid = Constructors.constructorid AND Results.raceid = Races.raceid ORDER BY Races.year DESC LIMIT 1;
+            SELECT DISTINCT Constructors.name, Races.year 
+            FROM Results, Constructors, Races 
+            WHERE Results.driverid = %s AND 
+                Results.constructorid = Constructors.constructorid AND 
+                Results.raceid = Races.raceid ORDER BY Races.year DESC LIMIT 1;
         """, (idoriginal,))
         resultado = cursor.fetchone()
-        escuderia,ano = resultado
+        escuderia, ano = resultado
 
         # Busca o período de atuação do piloto (primeiro_ano, ultimo_ano)
         cursor.execute("""
-        SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
-        FROM Results 
-        JOIN Constructors ON Results.constructorid = Constructors.constructorid
-        JOIN Races ON Results.raceid = Races.raceid
-        WHERE Results.driverid = %s;
+            SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
+            FROM Results 
+                JOIN Constructors ON Results.constructorid = Constructors.constructorid
+                JOIN Races ON Results.raceid = Races.raceid
+            WHERE Results.driverid = %s;
         """, (idoriginal,))
         primeiroano,ultimoano = cursor.fetchone()
 
@@ -57,7 +60,6 @@ def abreOverviewPiloto(connection, window, usuario):
         """, (idoriginal,))
 
         resultado2 = cursor.fetchall()
-        print(resultado2)
 
 
     # Adiciona label de usuário na tela.
@@ -73,14 +75,12 @@ def abreOverviewPiloto(connection, window, usuario):
     Label(window, text=escuderia + ' (' + str(ano) + ')').grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
      # Adiciona label de periodo ano na tela
-    Label(window, text="Período: ").grid(row=3, column=0, padx=5, sticky="w")
-    Label(window, text="Primeiro Ano:" + str(primeiroano) + " Ultimo Ano:" + str(ultimoano)).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    Label(window, text="Atividade: ").grid(row=3, column=0, padx=5, sticky="w")
+    Label(window, text=str(primeiroano) + " - " + str(ultimoano)).grid(row=3, column=1, padx=5, pady=5, sticky="w")
     
     window.mainloop()
 
 def abreOverviewEscuderia(connection, window, usuario):
-
-    
     cursor = connection.cursor()
     # Busca o nome completo do piloto a partir do seu id original.
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
@@ -120,7 +120,17 @@ def abreOverviewEscuderia(connection, window, usuario):
 
 
 def abreOverviewAdministrador(connection, window, usuario):
-    return None
+    imagem_original = Image.open("./images/key.png")
+    imagem_redimensionada = imagem_original.resize((12, 12))
+    imagem = ImageTk.PhotoImage(imagem_redimensionada)  
+      
+    Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, sticky="w")
+    frame = Frame(window)
+    frame.grid(row=0, column=1, padx=5, sticky="w")
+    label = Label(frame, text=usuario.login + " ", image=imagem, compound="right")
+    label.pack(pady=20)
+    window.mainloop()
+
 
 def abreOverview(connection, usuario):
     # Configura a janela principal.
@@ -129,6 +139,7 @@ def abreOverview(connection, usuario):
     window.geometry(f"{width}x{height}")
     window.resizable(False, False)
 
+    
 
     if usuario.tipo == 'Piloto':
         abreOverviewPiloto(connection, window, usuario)

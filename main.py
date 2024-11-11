@@ -2,6 +2,7 @@ from sources import login
 from sources import overview
 from sources import user
 import psycopg2
+import tkinter
 import configparser
 
 try:
@@ -32,8 +33,10 @@ try:
 except psycopg2.OperationalError as error:
     print("Erro de conexão:", error)
 
-except Exception as error:
-    print("Erro generico:", error)
+except tkinter.TclError as error:
+    print("NOT_FOUND_IMAGE: ", error)
+
+
 
 finally:
     # Garante que a conexão será fechada, se foi estabelecida
