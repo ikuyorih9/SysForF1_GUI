@@ -1,4 +1,4 @@
-from sources import login
+rom sources import login
 from sources import overview
 from sources import user
 import psycopg2
@@ -8,6 +8,10 @@ try:
     # ESTABELECE A CONEXÃO COM A BASE DE DADOS
     config = configparser.ConfigParser()
     config.read('database.ini')
+
+    # Verifica se a seção 'postgresql' foi lida corretamente
+    if 'postgresql' not in config:
+        raise Exception("Erro: Seção 'postgresql' não encontrada no arquivo de configuração.")
 
     connection = psycopg2.connect(
         dbname = config['postgresql']['dbname'],
@@ -22,8 +26,7 @@ try:
     
     if(proximaJanela == 1):
         overview.abreOverview(connection, usuario)
-    
-    if proximaJanela == 0:
+    elif proximaJanela == 0:
         print("Fechar janela!")
 
 except psycopg2.OperationalError as error:
@@ -31,3 +34,9 @@ except psycopg2.OperationalError as error:
 
 except Exception as error:
     print("Erro generico:", error)
+
+finally:
+    # Garante que a conexão será fechada, se foi estabelecida
+    if 'connection' in locals() and connection is not None:
+        connection.close()
+        print("Conexão fechada com sucesso.")
