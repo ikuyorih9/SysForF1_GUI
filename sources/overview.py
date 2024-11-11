@@ -11,6 +11,7 @@ def abreOverviewPiloto(connection, window, usuario):
 
     returnValue = -1
     nome = "unknown"
+    ano=-1
     tipo = ""
     idoriginal = ""
     cursor = connection.cursor()
@@ -30,7 +31,34 @@ def abreOverviewPiloto(connection, window, usuario):
         WHERE Results.driverid = %s AND 
               Results.constructorid = Constructors.constructorid AND Results.raceid = Races.raceid ORDER BY Races.year DESC LIMIT 1;
         """, (idoriginal,))
-        escuderia = cursor.fetchone()[0]
+        resultado = cursor.fetchone()
+        escuderia,ano = resultado
+
+        # Busca o período de atuação do piloto (primeiro_ano, ultimo_ano)
+        cursor.execute("""
+        SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
+        FROM Results 
+        JOIN Constructors ON Results.constructorid = Constructors.constructorid
+        JOIN Races ON Results.raceid = Races.raceid
+        WHERE Results.driverid = %s;
+        """, (idoriginal,))
+        primeiroano,ultimoano = cursor.fetchone()
+
+        cursor.execute("""
+        SELECT Races.year, Circuits.name AS circuito, 
+            SUM(Results.points) AS total_pontos, 
+            SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
+        FROM Results
+        JOIN Races ON Results.raceid = Races.raceid
+        JOIN Circuits ON Races.circuitid = Circuits.circuitid
+        WHERE Results.driverid = %s
+        GROUP BY Races.year, Circuits.name
+        ORDER BY Races.year, Circuits.name;
+        """, (idoriginal,))
+
+        resultado2 = cursor.fetchall()
+        print(resultado2)
+
 
     # Adiciona label de usuário na tela.
     Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, pady=5, sticky="w")
@@ -42,14 +70,21 @@ def abreOverviewPiloto(connection, window, usuario):
 
     # Adiciona label de escuderia na tela.
     Label(window, text="Escuderia: ").grid(row=2, column=0, padx=5, sticky="w")
-    Label(window, text=escuderia).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    Label(window, text=escuderia + ' (' + str(ano) + ')').grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
+     # Adiciona label de periodo ano na tela
+    Label(window, text="Período: ").grid(row=3, column=0, padx=5, sticky="w")
+    Label(window, text="Primeiro Ano:" + str(primeiroano) + " Ultimo Ano:" + str(ultimoano)).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    
     window.mainloop()
 
 def abreOverviewEscuderia(connection, window, usuario):
     return None
+
+def abreOverviewAdministrador(connection, window, usuario):
+    return None
+
 def abreOverview(connection, usuario):
-    
     # Configura a janela principal.
     window = Tk()
     window.title("Overview")
@@ -61,3 +96,5 @@ def abreOverview(connection, usuario):
         abreOverviewPiloto(connection, window, usuario)
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
+    elif usuario.tipo == 'Administrador':
+        abreOverviewAdministrador(connection,window,usuario)

@@ -181,3 +181,13 @@ WHERE Results.driverid = 159 AND
 ORDER BY Races.year DESC;
 
 SELECT forename || ' ' || surname FROM Driver WHERE driverid = 13;
+
+SELECT Races.year, Circuits.name AS circuito, 
+            SUM(Results.points) AS total_pontos, 
+            SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
+        FROM Results
+        JOIN Races ON Results.raceid = Races.raceid
+        JOIN Circuits ON Races.circuitid = Circuits.circuitid
+        WHERE Results.driverid = 1
+        GROUP BY Races.year, Circuits.name
+        ORDER BY Races.year, Circuits.name;
