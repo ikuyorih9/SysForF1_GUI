@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
 import hashlib
+from PIL import Image, ImageTk
 
 width = 400
 height = 300
@@ -61,8 +62,12 @@ def abreLogin(connection):
     window.resizable(False, False)
     window.configure(bg="#2C3E50")
 
+    img = Image.open("./images/user.png")
+    img = img.resize((60, 60), Image.LANCZOS)
+    photo = ImageTk.PhotoImage(img)
+
     # Adiciona o ícone de usuário
-    user_icon = Label(window, text="👤", font=("Arial", 40), bg="#2C3E50", fg="#ECF0F1")
+    user_icon = Label(window, image=photo, bg="#2C3E50")
     user_icon.pack(pady=10)
 
     # Texto de Login
@@ -81,6 +86,12 @@ def abreLogin(connection):
     Senha.bind('<FocusIn>', lambda event: on_entry_click(event, Senha, 'Password'))
     Senha.bind('<FocusOut>', lambda event: on_focusout(event, Senha, 'Password'))
     Senha.pack(pady=5)
+
+    # Adiciona o evento para pressionar Enter
+    window.bind('<Return>', lambda event: login())
+
+    # Adiciona o evento para pressionar Esc
+    window.bind('<Escape>', lambda event: sair())
 
     # Cria o botão para Login.
     fButtons = Frame(window, bg="#2C3E50")
