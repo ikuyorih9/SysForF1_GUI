@@ -8,6 +8,8 @@ from PIL import Image, ImageTk
 width = 1000
 height = 600
 
+
+
 def abreOverviewPiloto(connection, window, usuario):
     if usuario == None:
         return -1 
@@ -82,6 +84,7 @@ def abreOverviewPiloto(connection, window, usuario):
     window.mainloop()
 
 def abreOverviewEscuderia(connection, window, usuario):
+
     cursor = connection.cursor()
     # Busca o nome completo do piloto a partir do seu id original.
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
@@ -121,6 +124,13 @@ def abreOverviewEscuderia(connection, window, usuario):
 
 
 def abreOverviewAdministrador(connection, window, usuario):
+    def sair(tipoCadastro):
+        nonlocal returnValue
+        window.quit()
+        window.destroy()
+        returnValue = tipoCadastro
+
+    returnValue = 0
 
     mainFrame = Frame(window).grid(sticky="nsew")
 
@@ -136,9 +146,8 @@ def abreOverviewAdministrador(connection, window, usuario):
     # Label para o nome de usuário.
     Label(headerFrame, text="Usuário: " + usuario.login + " ", image=imagem, compound="right").grid(row=0, column=0, padx=5, sticky="w")
 
-    Button(headerFrame, text="Cadastrar Piloto", command=lambda: print("Cadastrar Piloto!")).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
-    Button(headerFrame, text="Cadastrar escuderia", command=lambda: print("Cadastrar escuderia!")).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
-
+    Button(headerFrame, text="Cadastrar Piloto", command=lambda: sair(1)).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    Button(headerFrame, text="Cadastrar escuderia", command=lambda: sair(2)).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
 
     cursor.execute("""
         SELECT COUNT(DISTINCT driverid)
@@ -259,6 +268,7 @@ def abreOverviewAdministrador(connection, window, usuario):
     seasonTabela.grid(row = 0)
 
     window.mainloop()
+    return returnValue
 
 
 def abreOverview(connection, usuario):
@@ -268,16 +278,14 @@ def abreOverview(connection, usuario):
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
 
-    
-
-
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
         abreOverviewPiloto(connection, window, usuario)
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
-        abreOverviewAdministrador(connection, window, usuario)
+        a = abreOverviewAdministrador(connection, window, usuario)
+        print(a)
 
 
 
