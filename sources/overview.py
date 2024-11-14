@@ -42,6 +42,21 @@ def abreOverviewPiloto(connection, window, usuario):
         """, (idoriginal,))
         primeiroano, ultimoano = cursor.fetchone()
 
+
+        cursor.execute("""
+            SELECT Races.year, Circuits.name AS circuito, 
+                        SUM(Results.points) AS total_pontos, 
+                        SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
+                    FROM Results
+                    JOIN Races ON Results.raceid = Races.raceid
+                    JOIN Circuits ON Races.circuitid = Circuits.circuitid
+                    WHERE Results.driverid = 1
+                    GROUP BY Races.year, Circuits.name
+                    ORDER BY Races.year, Circuits.name;
+
+        """, (idoriginal,))
+        
+
     resultado2 = cursor.fetchall()
 
 
@@ -66,10 +81,27 @@ def abreOverviewPiloto(connection, window, usuario):
 
     ttk.Label(window, text="Atividade:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
     ttk.Label(window, text=str(primeiroano) + " - " + str(ultimoano), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    
+    pilotoFrame = Frame(window)
+    pilotoFrame.grid(row = 5, column = 0, padx=5, pady=5)
+
+   
+    pilotoTabela = ttk.Treeview(pilotoFrame, columns=("Ano", "Circuito", "Total_Pontos", "Total_Vitorias"), show="headings")
+    pilotoTabela.heading("Ano", text="Ano")
+    pilotoTabela.heading("Circuito", text="Circuito")
+    pilotoTabela.heading("Total_Pontos", text="Total de Pontos")
+    pilotoTabela.heading("Total_Vitorias", text="Total de Vitorias")
+
+    if resultado2:
+       for tupla in resultado2:
+            ano, circuito, total_pontos, total_vitorias = tupla
+            pilotoTabela.insert("", "end", values=(ano, circuito, total_pontos, total_vitorias))
+
+    pilotoTabela.grid(row = 5)
 
     # Centraliza as colunas
     window.grid_columnconfigure(0, weight=1)
-    window.grid_columnconfigure(1, weight=1)
+    window.grid_columnconfigure(1, weight=1) 
 
 def abreOverviewEscuderia(connection, window, usuario):
     cursor = connection.cursor()
