@@ -30,6 +30,8 @@ try:
     elif proximaJanela == 0:
         print("Fechar janela!")
 
+
+#Exceções(erro de conexao, imagem nao encontrada)
 except psycopg2.OperationalError as error:
     print("Erro de conexão:", error)
 
