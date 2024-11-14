@@ -13,7 +13,6 @@ def abreLogin(connection):
 
     def registraLogin(userid):
         data = datetime.now()
-        print(data)
         cursor.execute("INSERT INTO Log_Table(userid, data) VALUES (%s,%s);", (userid, data))
         connection.commit()
 
@@ -44,33 +43,53 @@ def abreLogin(connection):
         window.destroy()
         returnValue = 0
 
+    def on_entry_click(event, entry, placeholder):
+        if entry.get() == placeholder:
+            entry.delete(0, "end")
+            entry.insert(0, '')
+            entry.config(fg = 'black')
+
+    def on_focusout(event, entry, placeholder):
+        if entry.get() == '':
+            entry.insert(0, placeholder)
+            entry.config(fg = 'grey')
+
     # Configura a janela principal.
     window = Tk()
     window.title("Login")
     window.geometry(f"{width}x{height}")
     window.resizable(False, False)
+    window.configure(bg="#2C3E50")
+
+    # Adiciona o ícone de usuário
+    user_icon = Label(window, text="👤", font=("Arial", 40), bg="#2C3E50", fg="#ECF0F1")
+    user_icon.pack(pady=10)
 
     # Texto de Login
-    Label(window, text="LOGIN F1", font=("Lucida Grande", 16)).grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+    Label(window, text="LOGIN F1", font=("Arial", 16), bg="#2C3E50", fg="#ECF0F1").pack(pady=10)
 
-    # Cria o campo de Usuário
-    Label(window, text="Usuário", width=10).grid(row=1, column=0, padx=0, pady = 5, sticky="w")
-    Nome = Entry(window, width=50)
-    Nome.grid(row=1, column=1, padx=0, pady=5)
+    # Cria o campo de Usuário com placeholder
+    Nome = Entry(window, width=30, font=("Arial", 12), fg='grey')
+    Nome.insert(0, 'Usuário')
+    Nome.bind('<FocusIn>', lambda event: on_entry_click(event, Nome, 'Usuário'))
+    Nome.bind('<FocusOut>', lambda event: on_focusout(event, Nome, 'Usuário'))
+    Nome.pack(pady=5)
 
-    # Cria o campo de Senha
-    Label(window, text="Senha", width=10).grid(row=2, column=0, padx=0, pady = 5, sticky="w")
-    Senha = Entry(window, show="*", width=50)
-    Senha.grid(row=2, column=1, padx=0, pady=5)
+    # Cria o campo de Senha com placeholder
+    Senha = Entry(window, width=30, font=("Arial", 12), show="*", fg='grey')
+    Senha.insert(0, 'Password')
+    Senha.bind('<FocusIn>', lambda event: on_entry_click(event, Senha, 'Password'))
+    Senha.bind('<FocusOut>', lambda event: on_focusout(event, Senha, 'Password'))
+    Senha.pack(pady=5)
 
     # Cria o botão para Login.
-    fButtons = Frame(window)
-    fButtons.grid(row=3, column=0, columnspan=2, pady=20)
+    fButtons = Frame(window, bg="#2C3E50")
+    fButtons.pack(pady=20)
 
-    bLogin = Button(fButtons, text="Sign in", command = login) 
-    bLogin.grid(row=3, column=0, sticky="e")
-    bSair = Button(fButtons, text="Sair", command = sair) 
-    bSair.grid(row=3, column=1, padx=10, sticky="w")
+    bLogin = Button(fButtons, text="Login", command=login, bg="#3498DB", fg="white", width=10, font=("Arial", 12), relief=GROOVE)
+    bLogin.grid(row=0, column=0, padx=10)
+    bSair = Button(fButtons, text="Sair", command=sair, width=10, font=("Arial", 12), relief=GROOVE)
+    bSair.grid(row=0, column=1, padx=10)
 
     window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()

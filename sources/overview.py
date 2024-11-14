@@ -1,7 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
-from tkinter import PhotoImage
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from sources import user
 from PIL import Image, ImageTk
 
@@ -9,12 +7,11 @@ width = 1000
 height = 600
 
 def abreOverviewPiloto(connection, window, usuario):
-    if usuario == None:
-        return -1 
+    if usuario is None:
+        return -1
 
-    returnValue = -1
     nome = "unknown"
-    ano=-1
+    ano = -1
     tipo = ""
     idoriginal = ""
     cursor = connection.cursor()
@@ -23,11 +20,9 @@ def abreOverviewPiloto(connection, window, usuario):
     idoriginal = usuario.idoriginal
 
     if idoriginal:
-        # Busca o nome completo do piloto a partir do seu id original.
         cursor.execute("SELECT forename || ' ' || surname FROM Driver WHERE driverid = %s;", (idoriginal,))
         nome = cursor.fetchone()[0]
 
-        # Busca a última escuderia que o piloto esteve associado (último ano que competiu)
         cursor.execute("""
             SELECT DISTINCT Constructors.name, Races.year 
             FROM Results, Constructors, Races 
@@ -38,7 +33,6 @@ def abreOverviewPiloto(connection, window, usuario):
         resultado = cursor.fetchone()
         escuderia, ano = resultado
 
-        # Busca o período de atuação do piloto (primeiro_ano, ultimo_ano)
         cursor.execute("""
             SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
             FROM Results 
@@ -46,44 +40,40 @@ def abreOverviewPiloto(connection, window, usuario):
                 JOIN Races ON Results.raceid = Races.raceid
             WHERE Results.driverid = %s;
         """, (idoriginal,))
-        primeiroano,ultimoano = cursor.fetchone()
+        primeiroano, ultimoano = cursor.fetchone()
 
-        cursor.execute("""
-        SELECT Races.year, Circuits.name AS circuito, 
-            SUM(Results.points) AS total_pontos, 
-            SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
-        FROM Results
-        JOIN Races ON Results.raceid = Races.raceid
-        JOIN Circuits ON Races.circuitid = Circuits.circuitid
-        WHERE Results.driverid = %s
-        GROUP BY Races.year, Circuits.name
-        ORDER BY Races.year, Circuits.name;
-        """, (idoriginal,))
-
-        resultado2 = cursor.fetchall()
+    resultado2 = cursor.fetchall()
 
 
-    # Adiciona label de usuário na tela.
-    Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    Label(window, text=usuario.login).grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    # Configura estilos
+    style = ttk.Style()
+    style.configure("TLabel", font=("Segoe UI", 12), background="#2C3E50", foreground="#ECF0F1")
+    style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
 
-    # Adiciona label de nome na tela.
-    Label(window, text="Nome: ").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    Label(window, text=nome).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    # Título
+    title_label = ttk.Label(window, text="Informações do Piloto", style="Title.TLabel")
+    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
-    # Adiciona label de escuderia na tela.
-    Label(window, text="Escuderia: ").grid(row=2, column=0, padx=5, sticky="w")
-    Label(window, text=escuderia + ' (' + str(ano) + ')').grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    # Adiciona labels de informações
+    ttk.Label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-     # Adiciona label de periodo ano na tela
-    Label(window, text="Atividade: ").grid(row=3, column=0, padx=5, sticky="w")
-    Label(window, text=str(primeiroano) + " - " + str(ultimoano)).grid(row=3, column=1, padx=5, pady=5, sticky="w")
-    
-    window.mainloop()
+    ttk.Label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+
+    ttk.Label(window, text="Escuderia:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=f"{escuderia} ({ano})", style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+
+    ttk.Label(window, text="Atividade:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=str(primeiroano) + " - " + str(ultimoano), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
+
+    # Centraliza as colunas
+    window.grid_columnconfigure(0, weight=1)
+    window.grid_columnconfigure(1, weight=1)
 
 def abreOverviewEscuderia(connection, window, usuario):
     cursor = connection.cursor()
-    # Busca o nome completo do piloto a partir do seu id original.
+
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
     nome = cursor.fetchone()[0]
 
@@ -91,34 +81,42 @@ def abreOverviewEscuderia(connection, window, usuario):
         SELECT constructorid, COUNT(DISTINCT driverid)
         FROM RESULTS, RACES
         WHERE Races.raceid = Results.raceid AND
-            Results.constructorid = %s AND
-            (driverid, year) IN (
-                SELECT DISTINCT driverid, MAX(year)
-                FROM RESULTS, RACES
-                WHERE Races.raceid = Results.raceid
-                GROUP BY (driverid)
-                ORDER BY driverid
-            )
+              Results.constructorid = %s AND
+              (driverid, year) IN (
+                  SELECT DISTINCT driverid, MAX(year)
+                  FROM RESULTS, RACES
+                  WHERE Races.raceid = Results.raceid
+                  GROUP BY (driverid)
+                  ORDER BY driverid
+              )
         GROUP BY constructorid
         ORDER BY constructorid;
     """, (usuario.idoriginal,))
 
     qtdPilotos = cursor.fetchone()[1]
 
-    # Adiciona label de usuário na tela.
-    Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    Label(window, text=usuario.login).grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    # Configura estilos
+    style = ttk.Style()
+    style.configure("TLabel", font=("Segoe UI", 12), background="#2C3E50", foreground="#ECF0F1")
+    style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
 
-    # Adiciona label de nome na tela.
-    Label(window, text="Nome: ").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    Label(window, text=nome).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    # Título
+    title_label = ttk.Label(window, text="Informações da Escuderia", style="Title.TLabel")
+    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
-    # Adiciona label de quantidade de pilotos na tela.
-    Label(window, text="Quantidade de pilotos: ").grid(row=2, column=0, padx=5, sticky="w")
-    Label(window, text=str(qtdPilotos)).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    # Adiciona labels de informações
+    ttk.Label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    window.mainloop()
+    ttk.Label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
+    ttk.Label(window, text="Quantidade de pilotos:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=str(qtdPilotos), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+
+    # Centraliza as colunas
+    window.grid_columnconfigure(0, weight=1)
+    window.grid_columnconfigure(1, weight=1)
 
 def abreOverviewAdministrador(connection, window, usuario):
 
@@ -267,9 +265,7 @@ def abreOverview(connection, usuario):
     window.title("Overview")
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
-
-    
-
+    window.configure(bg="#2C3E50")
 
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
@@ -279,6 +275,4 @@ def abreOverview(connection, usuario):
     elif usuario.tipo == 'Administrador':
         abreOverviewAdministrador(connection, window, usuario)
 
-
-
-        
+    window.mainloop()
