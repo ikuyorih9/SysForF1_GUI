@@ -1,11 +1,12 @@
 from tkinter import *
 from tkinter import messagebox
-from sources import user
 from tkinter import PhotoImage
+from tkinter import ttk
+from sources import user
 from PIL import Image, ImageTk
 
-width = 400
-height = 300
+width = 1000
+height = 600
 
 def abreOverviewPiloto(connection, window, usuario):
     if usuario == None:
@@ -120,15 +121,143 @@ def abreOverviewEscuderia(connection, window, usuario):
 
 
 def abreOverviewAdministrador(connection, window, usuario):
+
+    mainFrame = Frame(window).grid(sticky="nsew")
+
+    cursor = connection.cursor()
+
     imagem_original = Image.open("./images/key.png")
     imagem_redimensionada = imagem_original.resize((12, 12))
     imagem = ImageTk.PhotoImage(imagem_redimensionada)  
       
-    Label(window, text="Usuário: ").grid(row=0, column=0, padx=5, sticky="w")
-    frame = Frame(window)
-    frame.grid(row=0, column=1, padx=5, sticky="w")
-    label = Label(frame, text=usuario.login + " ", image=imagem, compound="right")
-    label.pack(pady=20)
+    headerFrame = Frame(mainFrame)
+    headerFrame.grid(row=0, columnspan=4,padx=5, pady=5, sticky="nsew")
+
+    # Label para o nome de usuário.
+    Label(headerFrame, text="Usuário: " + usuario.login + " ", image=imagem, compound="right").grid(row=0, column=0, padx=5, sticky="w")
+
+    Button(headerFrame, text="Cadastrar Piloto", command=lambda: print("Cadastrar Piloto!")).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    Button(headerFrame, text="Cadastrar escuderia", command=lambda: print("Cadastrar escuderia!")).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
+
+
+    cursor.execute("""
+        SELECT COUNT(DISTINCT driverid)
+        FROM Driver;
+    """)
+    resultado = cursor.fetchone()
+    if resultado:
+        qtdPilotos = resultado[0]
+
+    # Label para a quantidade total de pilotos
+    Label(mainFrame, text = "Quantidade de pilotos: " + str(qtdPilotos)).grid(row = 1, column = 0, padx=5, pady=5, sticky="w")
+    
+    # SEÇÃO DE ESCUDERIA
+
+    cursor.execute("""
+        SELECT COUNT(DISTINCT constructorid)
+        FROM Constructors;
+    """)
+    resultado = cursor.fetchone()
+    if resultado:
+        qtdEscuderias = resultado[0]
+
+    # Label para a quantidade total de escuderias
+
+
+    escuderiasFrame = Frame(mainFrame)
+    escuderiasFrame.grid(row = 2, column = 0, padx=5, pady=5)
+
+    Label(escuderiasFrame, text = "Quantidade de escuderias: " + str(qtdEscuderias)).grid(row = 0, column = 0, pady=5, sticky="w")
+
+    escuderiaTabela = ttk.Treeview(escuderiasFrame, columns=("Escuderia", "Pilotos"), show="headings")
+    escuderiaTabela.heading("Escuderia", text="Escuderia")
+    escuderiaTabela.heading("Pilotos", text="Qtd. Pilotos")
+
+    cursor.execute("""
+        SELECT Constructors.constructorid, Constructors.name, COUNT(DISTINCT driverid)
+        FROM RESULTS, RACES, Constructors
+        WHERE Races.raceid = Results.raceid AND
+              Results.constructorid = Constructors.constructorid AND 
+              (driverid, year) IN (
+                    SELECT DISTINCT driverid, MAX(year)
+                    FROM RESULTS, RACES
+                    WHERE Races.raceid = Results.raceid
+                    GROUP BY (driverid)
+                    ORDER BY driverid
+            )
+        GROUP BY (Constructors.constructorid, Constructors.name)
+        ORDER BY constructorid;
+    """)
+    escuderias = cursor.fetchall()
+
+    if escuderias:
+        for tupla in escuderias:
+            id, nome, qtdPilotos = tupla
+            escuderiaTabela.insert("", "end", values=(nome, qtdPilotos))
+    
+    escuderiaTabela.grid(row = 1)
+
+    
+    # SEÇÃO DE CIRCUITOS
+
+    cursor.execute("""
+        SELECT COUNT(DISTINCT raceid)
+        FROM RACES;
+    """)
+    resultado = cursor.fetchone()
+    if resultado:
+        qtdCircuitos = resultado[0]
+
+    # Label para a quantidade total de escuderias
+
+    circuitosFrame = Frame(mainFrame)
+    circuitosFrame.grid(row = 2, column = 1, padx=5, pady=5)
+
+    Label(circuitosFrame, text = "Quantidade de circuitos: " + str(qtdCircuitos)).grid(row = 0, column = 0, pady=5, sticky="w")
+
+    circuitosTabela = ttk.Treeview(circuitosFrame, columns=("Circuito", "Corridas"), show="headings")
+    circuitosTabela.heading("Circuito", text="Circuito")
+    circuitosTabela.heading("Corridas", text="Qtd. Corridas")
+
+    cursor.execute("""
+        SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
+        FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+        GROUP BY (Circuits.circuitid, Circuits.name)
+        ORDER BY Circuits.circuitid
+    """)
+    resultado = cursor.fetchall()
+    if resultado:
+        for tupla in resultado:
+            id, nome, qtd = tupla
+            circuitosTabela.insert("", "end", values=(nome, qtd))
+
+    circuitosTabela.grid(row = 1)
+
+
+    # SEÇÃO DE TEMPORADA
+
+    seasonFrame = Frame(mainFrame)
+    seasonFrame.grid(row = 4, columnspan=2, padx=5, pady=5)
+
+    seasonTabela = ttk.Treeview(seasonFrame, columns=("Temporada", "Corridas"), show="headings")
+    seasonTabela.heading("Temporada", text="Circuito")
+    seasonTabela.heading("Corridas", text="Qtd. Corridas")
+
+    cursor.execute("""
+        SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
+        FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
+        GROUP BY Seasons.year
+        ORDER BY Seasons.year ASC;
+    """)
+    resultado = cursor.fetchall()
+
+    if resultado:
+        for tupla in resultado:
+            ano, qtd = tupla
+            seasonTabela.insert("", "end", values=(ano, qtd))
+
+    seasonTabela.grid(row = 0)
+
     window.mainloop()
 
 
@@ -137,13 +266,19 @@ def abreOverview(connection, usuario):
     window = Tk()
     window.title("Overview")
     window.geometry(f"{width}x{height}")
-    window.resizable(False, False)
+    window.resizable(True, True)
 
     
 
+
+    # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
         abreOverviewPiloto(connection, window, usuario)
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
-        abreOverviewAdministrador(connection,window,usuario)
+        abreOverviewAdministrador(connection, window, usuario)
+
+
+
+        
