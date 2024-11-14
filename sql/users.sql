@@ -179,4 +179,37 @@ WHERE Races.raceid = Results.raceid AND
 GROUP BY constructorid
 ORDER BY constructorid;
 
+-- Obtem quantidade de escuderias.
+SELECT COUNT(DISTINCT constructorid)
+FROM Constructors;
 
+-- Obtem quantidade de pilotos por escuderia.
+SELECT Constructors.constructorid, Constructors.name, COUNT(DISTINCT driverid)
+FROM RESULTS, RACES, Constructors
+WHERE Races.raceid = Results.raceid AND
+      Results.constructorid = Constructors.constructorid AND 
+      (driverid, year) IN (
+        SELECT DISTINCT driverid, MAX(year)
+        FROM RESULTS, RACES
+        WHERE Races.raceid = Results.raceid
+        GROUP BY (driverid)
+        ORDER BY driverid
+      )
+GROUP BY (Constructors.constructorid, Constructors.name)
+ORDER BY constructorid;
+
+-- Quantidade de corridas cadastradas
+SELECT COUNT(DISTINCT raceid)
+FROM RACES;
+
+-- Quantidade de corridas por circuito
+SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
+FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+GROUP BY (Circuits.circuitid, Circuits.name)
+ORDER BY Circuits.circuitid
+
+
+SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
+FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
+GROUP BY Seasons.year
+ORDER BY Seasons.year ASC;

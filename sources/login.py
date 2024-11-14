@@ -24,16 +24,17 @@ def abreLogin(connection):
         senha = hashlib.md5(Senha.get().encode()).hexdigest()
         
         cursor.execute("SELECT userid FROM Users WHERE login = %s AND password = %s;", (usuario, senha))
-        result = cursor.fetchone()
-
-        if result:
-            userid = result[0]
+        resultado = cursor.fetchone()
+        if resultado:
+            userid = resultado
             registraLogin(userid)
             returnValue = 1
             window.quit()
             window.destroy()
             return
-        
+        else:
+            print("NOT_FOUND_DB: usuario nao foi encontrado na base.")
+
         messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 
     def sair():
