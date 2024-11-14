@@ -77,23 +77,48 @@ def abreOverviewEscuderia(connection, window, usuario):
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
     nome = cursor.fetchone()[0]
 
+    
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM RESULTS
+        WHERE constructorid = %s AND rank = 1;
+    """, (usuario.idoriginal,))
+
+    qtdCorridasGanhas = cursor.fetchone()[0]
+
+    # cursor.execute("""
+    #     SELECT constructorid, COUNT(DISTINCT driverid)
+    #     FROM RESULTS, RACES
+    #     WHERE Races.raceid = Results.raceid AND
+    #           Results.constructorid = %s AND
+    #           (driverid, year) IN (
+    #               SELECT DISTINCT driverid, MAX(year)
+    #               FROM RESULTS, RACES
+    #               WHERE Races.raceid = Results.raceid
+    #               GROUP BY (driverid)
+    #               ORDER BY driverid
+    #           )
+    #     GROUP BY constructorid
+    #     ORDER BY constructorid;
+    # """, (usuario.idoriginal,))
+
     cursor.execute("""
         SELECT constructorid, COUNT(DISTINCT driverid)
-        FROM RESULTS, RACES
-        WHERE Races.raceid = Results.raceid AND
-              Results.constructorid = %s AND
-              (driverid, year) IN (
-                  SELECT DISTINCT driverid, MAX(year)
-                  FROM RESULTS, RACES
-                  WHERE Races.raceid = Results.raceid
-                  GROUP BY (driverid)
-                  ORDER BY driverid
-              )
+        FROM RESULTS
+        WHERE constructorid = %s
         GROUP BY constructorid
         ORDER BY constructorid;
     """, (usuario.idoriginal,))
 
     qtdPilotos = cursor.fetchone()[1]
+
+    cursor.execute("""
+        SELECT MIN(year), MAX(year)
+        FROM RESULTS
+        JOIN RACES ON RESULTS.raceid = RACES.raceid
+        WHERE RESULTS.constructorid = %s;
+    """, (usuario.idoriginal,))
+    primeiroAno, ultimoAno = cursor.fetchone()
 
     # Configura estilos
     style = ttk.Style()
@@ -111,8 +136,14 @@ def abreOverviewEscuderia(connection, window, usuario):
     ttk.Label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
     ttk.Label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Quantidade de pilotos:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=str(qtdPilotos), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    ttk.Label(window, text="Vitórias:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=str(qtdCorridasGanhas), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+
+    ttk.Label(window, text="Pilotos da Escuderia:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=str(qtdPilotos), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
+
+    ttk.Label(window, text="Atividade:", style="TLabel").grid(row=5, column=0, padx=5, pady=5, sticky="e")
+    ttk.Label(window, text=str(primeiroAno) + " - " + str(ultimoAno), style="TLabel").grid(row=5, column=1, padx=5, pady=5, sticky="w")
 
     # Centraliza as colunas
     window.grid_columnconfigure(0, weight=1)
