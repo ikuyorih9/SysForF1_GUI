@@ -1,9 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from tkinter import messagebox
 from tkinter import Toplevel
-from tkinter import PhotoImage
-from sources import user
 from sources.cadastro import *
 from sources.navigation import *
 from sources.layouts import *
@@ -14,7 +11,7 @@ height = 600
 
 
 
-def abreOverviewPiloto(connection, window, usuario):
+def abreOverviewPiloto(connection, overviewWindow, usuario):
     if usuario is None:
         return -1
 
@@ -69,28 +66,29 @@ def abreOverviewPiloto(connection, window, usuario):
 
 
     # Configura estilos
-    style = ttk.Style()
-    style.configure("TLabel", font=("Segoe UI", 12), background="#2C3E50", foreground="#ECF0F1")
-    style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
+    titleTextSize = 16
+    titleTextStyle = "bold"
+    labelTextSize = 12
+    labelTextStyle = "normal"
 
     # Título
-    title_label = cria_label(window, text="Informações do Piloto", style="Title.TLabel")
+    title_label = cria_label(overviewWindow, text="Informações do Piloto",fontsize=titleTextSize, fontstyle=titleTextStyle)
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     # Adiciona labels de informações
-    cria_label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, text="Usuário:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, text=usuario.login, fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, text="Nome:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, text=nome, fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(window, text="Escuderia:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=f"{escuderia} ({ano})", style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, text="Escuderia:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, text=f"{escuderia} ({ano})", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(window, text="Atividade:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=str(primeiroano) + " - " + str(ultimoano), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, text="Atividade:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, text=str(primeiroano) + " - " + str(ultimoano), fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
     
-    pilotoFrame = Frame(window)
+    pilotoFrame = Frame(overviewWindow)
     pilotoFrame.grid(row = 5, column = 0, padx=5, pady=5)
 
    
@@ -108,56 +106,78 @@ def abreOverviewPiloto(connection, window, usuario):
     pilotoTabela.grid(row = 5)
 
     # Centraliza as colunas
-    window.grid_columnconfigure(0, weight=1)
-    window.grid_columnconfigure(1, weight=1) 
+    overviewWindow.grid_columnconfigure(0, weight=1)
+    overviewWindow.grid_columnconfigure(1, weight=1) 
 
-def abreOverviewEscuderia(connection, window, usuario):
+    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
+    overviewWindow.mainloop()
+
+def abreOverviewEscuderia(connection, overviewWindow, usuario):
 
     cursor = connection.cursor()
 
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
     nome = cursor.fetchone()[0]
 
+    
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM RESULTS
+        WHERE constructorid = %s AND rank = 1;
+    """, (usuario.idoriginal,))
+
+    qtdCorridasGanhas = cursor.fetchone()[0]
+
     cursor.execute("""
         SELECT constructorid, COUNT(DISTINCT driverid)
-        FROM RESULTS, RACES
-        WHERE Races.raceid = Results.raceid AND
-              Results.constructorid = %s AND
-              (driverid, year) IN (
-                  SELECT DISTINCT driverid, MAX(year)
-                  FROM RESULTS, RACES
-                  WHERE Races.raceid = Results.raceid
-                  GROUP BY (driverid)
-                  ORDER BY driverid
-              )
+        FROM RESULTS
+        WHERE constructorid = %s
         GROUP BY constructorid
         ORDER BY constructorid;
     """, (usuario.idoriginal,))
 
     qtdPilotos = cursor.fetchone()[1]
 
+    cursor.execute("""
+        SELECT MIN(year), MAX(year)
+        FROM RESULTS
+        JOIN RACES ON RESULTS.raceid = RACES.raceid
+        WHERE RESULTS.constructorid = %s;
+    """, (usuario.idoriginal,))
+    primeiroAno, ultimoAno = cursor.fetchone()
+
     # Configura estilos
-    style = ttk.Style()
-    style.configure("TLabel", font=("Segoe UI", 12), background="#2C3E50", foreground="#ECF0F1")
-    style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
+    titleTextSize = 16
+    titleTextStyle = "bold"
+    labelTextSize = 12
+    labelTextStyle = "normal"
 
     # Título
-    title_label = cria_label(window, text="Informações da Escuderia", style="Title.TLabel")
+    title_label = cria_label(overviewWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     # Adiciona labels de informações
-    cria_label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(window, text="Quantidade de pilotos:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    cria_label(window, text=str(qtdPilotos), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(overviewWindow, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+
+    cria_label(overviewWindow, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+
+    cria_label(overviewWindow, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="e")
+    cria_label(overviewWindow, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
 
     # Centraliza as colunas
-    window.grid_columnconfigure(0, weight=1)
-    window.grid_columnconfigure(1, weight=1)
+    overviewWindow.grid_columnconfigure(0, weight=1)
+    overviewWindow.grid_columnconfigure(1, weight=1)
+
+    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
+    overviewWindow.mainloop()
 
 def abreOverviewAdministrador(connection, overviewWindow, usuario):
     def cadastrarEscuderia():

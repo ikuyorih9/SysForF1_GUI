@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import messagebox
-from sources import user
 from sources.layouts import *
 from sources.navigation import *
 from tkcalendar import DateEntry

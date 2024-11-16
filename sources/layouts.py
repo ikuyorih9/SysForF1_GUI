@@ -6,7 +6,7 @@ from tkinter import ttk
 def cria_label(parent, text, fontsize, fontstyle):
     return Label(parent, text=text, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, fontstyle))
     
-def cria_label_image(parent, text, fontsize, formattype, image):
+def cria_label_image(parent, text=None, fontsize=12, formattype="normal", image=None):
     return Label(parent, text=text, image=image, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, formattype))
 
 # FUNÇÕES PARA CRIAÇÃO DE BOTÕES
@@ -14,7 +14,7 @@ def cria_label_image(parent, text, fontsize, formattype, image):
 def cria_botao(parent, text, fontsize, command):
     return  Button(parent, text=text, command=command, bg="#3498DB", fg="white", font=("Montserrat", fontsize), relief=GROOVE)
 
-def cria_entry(parent, backtext, fontsize):
+def cria_entry(parent, backtext, fontsize, width=None, show=None):
     def on_entry_click(event, entry, placeholder):
         if entry.get() == placeholder:
             entry.delete(0, "end")
@@ -26,7 +26,7 @@ def cria_entry(parent, backtext, fontsize):
             entry.insert(0, placeholder)
             entry.config(fg = 'grey')
 
-    entry = Entry(parent, font=("Montserrat", fontsize), fg='grey')
+    entry = Entry(parent, width=width, font=("Montserrat", fontsize), fg='grey', show=show)
     entry.bind('<FocusIn>', lambda event: on_entry_click(event, entry, backtext))
     entry.bind('<FocusOut>', lambda event: on_focusout(event, entry, backtext))
     entry.insert(0, backtext)

@@ -2,7 +2,9 @@ from sources import navigation
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
+from sources.layouts import *
 import hashlib
+from PIL import Image, ImageTk
 
 width = 400
 height = 300
@@ -44,17 +46,6 @@ def abreLogin(connection):
         window.destroy()
         returnValue = 0
 
-    def on_entry_click(event, entry, placeholder):
-        if entry.get() == placeholder:
-            entry.delete(0, "end")
-            entry.insert(0, '')
-            entry.config(fg = 'black')
-
-    def on_focusout(event, entry, placeholder):
-        if entry.get() == '':
-            entry.insert(0, placeholder)
-            entry.config(fg = 'grey')
-
     # Configura a janela principal.
     window = Tk()
     window.title("Login")
@@ -62,36 +53,49 @@ def abreLogin(connection):
     window.resizable(False, False)
     window.configure(bg="#2C3E50")
 
+    # Configura estilos
+    titleTextSize = 16
+    titleTextStyle = "bold"
+    labelTextSize = 12
+    labelTextStyle = "normal"
+    entryWidth = 30
+
+    # Abre imagem no ícone de usuário
+    img = Image.open("./images/user.png")
+    img = img.resize((60, 60), Image.LANCZOS)
+    photo = ImageTk.PhotoImage(img)
+
     # Adiciona o ícone de usuário
-    user_icon = Label(window, text="👤", font=("Arial", 40), bg="#2C3E50", fg="#ECF0F1")
+    user_icon = Label(window, image=photo, bg="#2C3E50")
     user_icon.pack(pady=10)
 
     # Texto de Login
-    Label(window, text="LOGIN F1", font=("Arial", 16), bg="#2C3E50", fg="#ECF0F1").pack(pady=10)
+    cria_label(window, "LOGIN F1", titleTextSize, titleTextStyle).pack(pady=10)
 
     # Cria o campo de Usuário com placeholder
-    Nome = Entry(window, width=30, font=("Arial", 12), fg='grey')
-    Nome.insert(0, 'Usuário')
-    Nome.bind('<FocusIn>', lambda event: on_entry_click(event, Nome, 'Usuário'))
-    Nome.bind('<FocusOut>', lambda event: on_focusout(event, Nome, 'Usuário'))
+    Nome = cria_entry(window, 'Usuário', labelTextSize, entryWidth)
     Nome.pack(pady=5)
 
     # Cria o campo de Senha com placeholder
-    Senha = Entry(window, width=30, font=("Arial", 12), show="*", fg='grey')
-    Senha.insert(0, 'Password')
-    Senha.bind('<FocusIn>', lambda event: on_entry_click(event, Senha, 'Password'))
-    Senha.bind('<FocusOut>', lambda event: on_focusout(event, Senha, 'Password'))
+    Senha = cria_entry(window, 'Password', labelTextSize, entryWidth, "*")
     Senha.pack(pady=5)
+
+    # Adiciona o evento para pressionar Enter
+    window.bind('<Return>', lambda event: login())
+
+    # Adiciona o evento para pressionar Esc
+    window.bind('<Escape>', lambda event: sair())
 
     # Cria o botão para Login.
     fButtons = Frame(window, bg="#2C3E50")
     fButtons.pack(pady=20)
 
-    bLogin = Button(fButtons, text="Login", command=login, bg="#3498DB", fg="white", width=10, font=("Arial", 12), relief=GROOVE)
+    bLogin = cria_botao(fButtons, "Login", labelTextSize, login)
     bLogin.grid(row=0, column=0, padx=10)
-    bSair = Button(fButtons, text="Sair", command=sair, width=10, font=("Arial", 12), relief=GROOVE)
+    bSair = cria_botao(fButtons, "Sair", labelTextSize, sair)
     bSair.grid(row=0, column=1, padx=10)
 
     window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()
+
     return [returnValue, userid]
