@@ -120,13 +120,24 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     nome = cursor.fetchone()[0]
 
     
+    # Query para contar a quantidade de corridas ganhas por uma escuderia
     cursor.execute("""
         SELECT COUNT(*)
         FROM RESULTS
         WHERE constructorid = %s AND rank = 1;
     """, (usuario.idoriginal,))
-
     qtdCorridasGanhas = cursor.fetchone()[0]
+
+    # Query para obter a lista das corridas ganhas com seus respectivos pilotos
+    cursor.execute("""
+        SELECT RACES.name, DRIVER.forename || ' ' || DRIVER.surname
+        FROM RESULTS
+        JOIN RACES ON RESULTS.raceid = RACES.raceid
+        JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
+        WHERE RESULTS.constructorid = %s AND RESULTS.rank = 1
+        ORDER BY RESULTS.raceid;
+    """, (usuario.idoriginal,))
+    tabelaCorridasGanhas = cursor.fetchall()
 
     cursor.execute("""
         SELECT constructorid, COUNT(DISTINCT driverid)
@@ -135,8 +146,17 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
         GROUP BY constructorid
         ORDER BY constructorid;
     """, (usuario.idoriginal,))
-
     qtdPilotos = cursor.fetchone()[1]
+
+    cursor.execute("""
+        SELECT DISTINCT DRIVER.forename || ' ' || DRIVER.surname
+        FROM RESULTS
+		JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
+        WHERE constructorid = %s
+		ORDER BY DRIVER.forename || ' ' || DRIVER.surname;
+    """, (usuario.idoriginal,))
+    tabelaPilotos = cursor.fetchall()
+
 
     cursor.execute("""
         SELECT MIN(year), MAX(year)
@@ -147,30 +167,79 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     primeiroAno, ultimoAno = cursor.fetchone()
 
     # Configura estilos
-    titleTextSize = 16
+    titleTextSize = 24
     titleTextStyle = "bold"
     labelTextSize = 12
     labelTextStyle = "normal"
 
+    fWindow = cria_scrollable_frame(overviewWindow)
+    fWindow.pack(fill="both", expand=True, padx=20, pady=20)
+
     # Título
-    title_label = cria_label(overviewWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
-    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
+    title_label = cria_label(fWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
+    title_label.pack(padx=10, pady=10)
+
+    fInfos = Frame(fWindow, bg="#2C3E50")
+    fInfos.pack(padx=10,pady=5)
 
     # Adiciona labels de informações
-    cria_label(overviewWindow, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+
+    # TABELA DE CORRIDAS GANHAS
+    corridasGanhasFrame = Frame(fWindow, bg="#2C3E50")
+    corridasGanhasFrame.pack(fill="x", pady=10)
+
+    # Cria label de título para a tabela.
+    cria_label(corridasGanhasFrame, "Corridas Ganhas", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de corridas ganhas.
+    corridasGanhasTabela = ttk.Treeview(corridasGanhasFrame, columns=("Corrida", "Piloto"), show="headings")
+    corridasGanhasTabela.heading("Corrida", text="Corrida")
+    corridasGanhasTabela.heading("Piloto", text="Piloto")
+
+    if tabelaCorridasGanhas:
+        for tupla in tabelaCorridasGanhas:
+            corida, piloto = tupla
+            corridasGanhasTabela.insert("", "end", values=(corida, piloto))
+    
+    corridasGanhasTabela.pack(padx = 10, pady = 5, fill="x")
+
+    # TABELA DE PILOTOS
+    pilotosFrame = Frame(fWindow, bg="#2C3E50")
+    pilotosFrame.pack(fill="x", pady=10)
+
+    # Cria label de título para a tabela.
+    cria_label(pilotosFrame, "Pilotos que correram pela escuderia", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de pilotos.
+    pilotosTabela = ttk.Treeview(pilotosFrame, columns=("Piloto"), show="headings")
+    pilotosTabela.heading("Piloto", text="Piloto")
+
+    if tabelaPilotos:
+        for tupla in tabelaPilotos:
+            piloto = tupla
+            pilotosTabela.insert("", "end", values=(piloto))
+    
+    pilotosTabela.pack(padx = 10, pady = 5, fill="x")
+
+    fButton = Frame(fWindow, bg="#2C3E50")
+    fButton.pack(pady=10)
+
+    bVoltar = cria_botao(fButton, "Sair", 12, lambda: go_back(overviewWindow))
+    bVoltar.pack(padx=10)
 
     # Centraliza as colunas
     overviewWindow.grid_columnconfigure(0, weight=1)
