@@ -19,9 +19,10 @@ def pop():
 
 def go_back(current_window):
     current_window.destroy()
-    window = pop()
-    if not window.winfo_viewable():
-        window.deiconify()
+    if Navigation:
+        window = pop()
+        if not window.winfo_viewable():
+            window.deiconify()
 
 def go_forward(current_window, function_next_window):
     push(current_window)
@@ -31,8 +32,9 @@ def go_forward(current_window, function_next_window):
         current_window.quit()
     function_next_window()
 
-def close_all_windows():
+def close_all_windows(current_window):
     print("Fechando todas as janelas:")
+    current_window.destroy()
     while Navigation:
         window = pop()
         print("\t-", window.title())

@@ -3,7 +3,7 @@ from tkinter import ttk
 
 # FUNÇÕES PARA CRIAÇÃO DE LABELS
 
-def cria_label(parent, text, fontsize, fontstyle):
+def cria_label(parent, text=None, fontsize=12, fontstyle="normal"):
     return Label(parent, text=text, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, fontstyle))
     
 def cria_label_image(parent, text=None, fontsize=12, formattype="normal", image=None):
@@ -11,10 +11,10 @@ def cria_label_image(parent, text=None, fontsize=12, formattype="normal", image=
 
 # FUNÇÕES PARA CRIAÇÃO DE BOTÕES
 
-def cria_botao(parent, text, fontsize, command):
+def cria_botao(parent, text, fontsize=12, command = lambda:print("botão")):
     return  Button(parent, text=text, command=command, bg="#3498DB", fg="white", font=("Montserrat", fontsize), relief=GROOVE)
 
-def cria_entry(parent, backtext, fontsize, width=None, show=None):
+def cria_entry(parent, backtext, fontsize=12, width=None, show=None):
     def on_entry_click(event, entry, placeholder):
         if entry.get() == placeholder:
             entry.delete(0, "end")

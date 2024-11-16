@@ -23,21 +23,12 @@ try:
         port = config['postgresql']['port']
     )
 
-    proximaJanela, userid = login.abreLogin(connection)
-    usuario = user.carregaInfoUsuario(userid, connection)
-    
-    if(proximaJanela == 1):
-        overview.abreOverview(connection, usuario)
-    elif proximaJanela == 0:
-        print("Fechar janela!")
-
+    login.abreLogin(connection)
 
 #Exceções(erro de conexao, imagem nao encontrada)
 except psycopg2.OperationalError as error:
     print("Erro de conexão:", error)
 
-except tkinter.TclError as error:
-    print("NOT_FOUND_IMAGE: ", error)
 
 finally:
     # Garante que a conexão será fechada, se foi estabelecida

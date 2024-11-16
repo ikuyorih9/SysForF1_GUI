@@ -417,7 +417,7 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
 
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
+    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
 
 
