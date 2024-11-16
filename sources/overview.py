@@ -147,30 +147,44 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     primeiroAno, ultimoAno = cursor.fetchone()
 
     # Configura estilos
-    titleTextSize = 16
+    titleTextSize = 24
     titleTextStyle = "bold"
     labelTextSize = 12
     labelTextStyle = "normal"
 
+    overviewWindow.geometry(f"{600}x{350}")
+
+    fWindow = Frame(overviewWindow, bg="#2C3E50")
+    fWindow.pack(fill="both", expand=True, padx=20, pady=20)
+
     # Título
-    title_label = cria_label(overviewWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
-    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
+    title_label = cria_label(fWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
+    title_label.pack(padx=10, pady=10)
+
+    fInfos = Frame(fWindow, bg="#2C3E50")
+    fInfos.pack(padx=10,pady=5)
 
     # Adiciona labels de informações
-    cria_label(overviewWindow, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
 
-    cria_label(overviewWindow, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+
+    fButton = Frame(fWindow, bg="#2C3E50")
+    fButton.pack(pady=10)
+
+    bVoltar = cria_botao(fButton, "Sair", 12, lambda: go_back(overviewWindow))
+    bVoltar.pack(padx=10)
 
     # Centraliza as colunas
     overviewWindow.grid_columnconfigure(0, weight=1)
