@@ -1,8 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter import Toplevel
 from tkinter import PhotoImage
 from tkinter import ttk
 from sources import user
+from sources import cadastro
+from sources import navigation
 from PIL import Image, ImageTk
 
 width = 1000
@@ -123,16 +126,17 @@ def abreOverviewEscuderia(connection, window, usuario):
     window.mainloop()
 
 
-def abreOverviewAdministrador(connection, window, usuario):
-    def sair(tipoCadastro):
+def abreOverviewAdministrador(connection, overviewWindow, usuario):
+    def sair():
         nonlocal returnValue
-        window.quit()
-        window.destroy()
-        returnValue = tipoCadastro
+        navigation.go_back(overviewWindow)
 
     returnValue = 0
 
-    mainFrame = Frame(window).grid(sticky="nsew")
+    print("TELA: ", overviewWindow.title())
+
+    mainFrame = Frame(overviewWindow)
+    mainFrame.pack(fill="both", expand=True)
 
     cursor = connection.cursor()
 
@@ -266,17 +270,21 @@ def abreOverviewAdministrador(connection, window, usuario):
             seasonTabela.insert("", "end", values=(ano, qtd))
 
     seasonTabela.grid(row = 0)
-
-    window.mainloop()
+    #overviewWindow.after(500)
+    #overviewWindow.deiconify()
+    overviewWindow.protocol("WM_DELETE_WINDOW", sair)
+    overviewWindow.mainloop()
     return returnValue
 
 
 def abreOverview(connection, usuario):
+    navigation.imprimeTracking()
     # Configura a janela principal.
-    window = Tk()
+    window = Toplevel()
     window.title("Overview")
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
+
 
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
@@ -284,8 +292,9 @@ def abreOverview(connection, usuario):
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
-        a = abreOverviewAdministrador(connection, window, usuario)
-        print(a)
+        tipoCadastro = abreOverviewAdministrador(connection, window, usuario)
+        cadastro.cadastrar(connection, tipoCadastro)
+
 
 
 

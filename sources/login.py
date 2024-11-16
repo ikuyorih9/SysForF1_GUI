@@ -1,3 +1,4 @@
+from sources import navigation
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
@@ -30,8 +31,9 @@ def abreLogin(connection):
             userid = resultado
             registraLogin(userid)
             returnValue = 1
+            navigation.push(window)
+            window.withdraw()
             window.quit()
-            window.destroy()
             return
         else:
             print("NOT_FOUND_DB: usuario nao foi encontrado na base.")
@@ -40,9 +42,17 @@ def abreLogin(connection):
 
     def sair():
         nonlocal returnValue
-        window.quit()
         window.destroy()
         returnValue = 0
+
+    def aaa():
+        mywindow = Toplevel()
+        mywindow.title("Overview")
+        mywindow.geometry(f"{width}x{height}")
+        mywindow.resizable(True, True)
+        Label(mywindow, text="AAA").grid(row=0, column=0, padx=5, sticky="w")
+        window.withdraw()
+        mywindow.mainloop()
 
     # Configura a janela principal.
     window = Tk()
@@ -72,7 +82,9 @@ def abreLogin(connection):
     bSair = Button(fButtons, text="Sair", command = sair) 
     bSair.grid(row=3, column=1, padx=10, sticky="w")
 
+    myb = Button(fButtons, text="aaa", command = aaa) 
+    myb.grid(row=4, column=0, sticky="e")
+
     window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()
-
     return [returnValue, userid]

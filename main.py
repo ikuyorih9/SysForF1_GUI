@@ -1,6 +1,7 @@
 from sources import login
 from sources import overview
 from sources import user
+from sources import navigation
 import psycopg2
 import tkinter
 import configparser
@@ -37,8 +38,6 @@ except psycopg2.OperationalError as error:
 
 except tkinter.TclError as error:
     print("NOT_FOUND_IMAGE: ", error)
-
-
 
 finally:
     # Garante que a conexão será fechada, se foi estabelecida
