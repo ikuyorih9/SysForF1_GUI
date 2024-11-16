@@ -61,3 +61,16 @@ def cria_scrollable_frame(parent):
     canvas.bind_all("<MouseWheel>", on_mousewheel)
 
     return scrollableFrame
+
+def cria_tabela(parent, columns, entries):
+    # Cria a tabela de escuderias.
+    table = ttk.Treeview(parent, columns=columns, show="headings")
+    for column in columns:
+        table.heading(column, text=column)
+
+    # Adiciona as escuderias na tabela
+    if entries:
+        for entry in entries:
+            table.insert("", "end", values=entry)
+
+    return table

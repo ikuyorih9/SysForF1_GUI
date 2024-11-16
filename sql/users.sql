@@ -216,3 +216,12 @@ ORDER BY Seasons.year ASC;
 
 SELECT * FROM DRIVER ORDER BY driverid DESC LIMIT 10;
 SELECT * FROM USERS ORDER BY userid DESC LIMIT 10;
+
+SELECT status, COUNT(resultid)
+FROM Results LEFT JOIN Status ON Results.statusid = Status.statusid
+GROUP BY status
+ORDER BY status;
+
+SELECT city, iatacode, 
+FROM airports
+ORDER BY name

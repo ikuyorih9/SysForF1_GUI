@@ -103,7 +103,6 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
     cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
 
 def abreOverviewEscuderia(connection, overviewWindow, usuario):
@@ -236,7 +235,7 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     overviewWindow.grid_columnconfigure(0, weight=1)
     overviewWindow.grid_columnconfigure(1, weight=1)
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
+    
     overviewWindow.mainloop()
 
 def abreOverviewAdministrador(connection, overviewWindow, usuario):
@@ -406,9 +405,8 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
 
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
-    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio(connection, usuario) )).pack(side="right")
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
 
 
@@ -420,6 +418,7 @@ def abreOverview(connection, usuario):
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
     window.configure(bg="#2C3E50")
+    window.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(window))
 
 
     # Função para carregar as informações conforme o tipo do usuário
