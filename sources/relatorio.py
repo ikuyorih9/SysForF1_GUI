@@ -8,6 +8,11 @@ from sources.user import *
 
 width = 1000
 height = 600
+def abreRelatorioPiloto(connection, window, usuario):
+    window.mainloop()
+    
+def abreRelatorioEscuderia(connection, window, usuario):
+    window.mainloop()
 
 def abreRelatorioAdmin(connection, window, usuario):
     # QUERIES:
@@ -72,9 +77,9 @@ def abreRelatorio(connection, usuario):
 
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
-        abreOverviewPiloto(connection, window, usuario)
+        abreRelatorioPiloto(connection, window, usuario)
     elif usuario.tipo == 'Escuderia':
-        abreOverviewEscuderia(connection, window, usuario)
+        abreRelatorioEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
         abreRelatorioAdmin(connection, window, usuario)
 

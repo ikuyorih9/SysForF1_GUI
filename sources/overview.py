@@ -101,7 +101,7 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
 
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
-    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio(connection, usuario) )).pack(side="right")
 
     overviewWindow.mainloop()
 
@@ -230,7 +230,7 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
 
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
-    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio(connection, usuario) )).pack(side="right")
     # Centraliza as colunas
     overviewWindow.grid_columnconfigure(0, weight=1)
     overviewWindow.grid_columnconfigure(1, weight=1)
