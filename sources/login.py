@@ -1,3 +1,4 @@
+from sources import navigation
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
@@ -29,8 +30,9 @@ def abreLogin(connection):
             userid = resultado
             registraLogin(userid)
             returnValue = 1
+            navigation.push(window)
+            window.withdraw()
             window.quit()
-            window.destroy()
             return
         else:
             print("NOT_FOUND_DB: usuario nao foi encontrado na base.")
@@ -39,7 +41,6 @@ def abreLogin(connection):
 
     def sair():
         nonlocal returnValue
-        window.quit()
         window.destroy()
         returnValue = 0
 
@@ -93,5 +94,4 @@ def abreLogin(connection):
 
     window.protocol("WM_DELETE_WINDOW", sair)
     window.mainloop()
-
     return [returnValue, userid]

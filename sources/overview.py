@@ -1,10 +1,17 @@
 from tkinter import *
-from tkinter import ttk, messagebox
+from tkinter import messagebox
+from tkinter import Toplevel
+from tkinter import PhotoImage
+from tkinter import ttk
 from sources import user
+from sources import cadastro
+from sources import navigation
 from PIL import Image, ImageTk
 
 width = 1000
 height = 600
+
+
 
 def abreOverviewPiloto(connection, window, usuario):
     if usuario is None:
@@ -104,6 +111,7 @@ def abreOverviewPiloto(connection, window, usuario):
     window.grid_columnconfigure(1, weight=1) 
 
 def abreOverviewEscuderia(connection, window, usuario):
+
     cursor = connection.cursor()
 
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
@@ -150,9 +158,17 @@ def abreOverviewEscuderia(connection, window, usuario):
     window.grid_columnconfigure(0, weight=1)
     window.grid_columnconfigure(1, weight=1)
 
-def abreOverviewAdministrador(connection, window, usuario):
+def abreOverviewAdministrador(connection, overviewWindow, usuario):
+    def sair():
+        nonlocal returnValue
+        navigation.go_back(overviewWindow)
 
-    mainFrame = Frame(window).grid(sticky="nsew")
+    returnValue = 0
+
+    print("TELA: ", overviewWindow.title())
+
+    mainFrame = Frame(overviewWindow)
+    mainFrame.pack(fill="both", expand=True)
 
     cursor = connection.cursor()
 
@@ -166,9 +182,8 @@ def abreOverviewAdministrador(connection, window, usuario):
     # Label para o nome de usuário.
     Label(headerFrame, text="Usuário: " + usuario.login + " ", image=imagem, compound="right").grid(row=0, column=0, padx=5, sticky="w")
 
-    Button(headerFrame, text="Cadastrar Piloto", command=lambda: print("Cadastrar Piloto!")).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
-    Button(headerFrame, text="Cadastrar escuderia", command=lambda: print("Cadastrar escuderia!")).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
-
+    Button(headerFrame, text="Cadastrar Piloto", command=lambda: sair(1)).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    Button(headerFrame, text="Cadastrar escuderia", command=lambda: sair(2)).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
 
     cursor.execute("""
         SELECT COUNT(DISTINCT driverid)
@@ -287,16 +302,21 @@ def abreOverviewAdministrador(connection, window, usuario):
             seasonTabela.insert("", "end", values=(ano, qtd))
 
     seasonTabela.grid(row = 0)
-
-    window.mainloop()
+    #overviewWindow.after(500)
+    #overviewWindow.deiconify()
+    overviewWindow.protocol("WM_DELETE_WINDOW", sair)
+    overviewWindow.mainloop()
+    return returnValue
 
 
 def abreOverview(connection, usuario):
+    navigation.imprimeTracking()
     # Configura a janela principal.
-    window = Tk()
+    window = Toplevel()
     window.title("Overview")
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
+
     window.configure(bg="#2C3E50")
 
     # Função para carregar as informações conforme o tipo do usuário
@@ -305,6 +325,8 @@ def abreOverview(connection, usuario):
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
-        abreOverviewAdministrador(connection, window, usuario)
+        tipoCadastro = abreOverviewAdministrador(connection, window, usuario)
+        cadastro.cadastrar(connection, tipoCadastro)
+
 
     window.mainloop()
