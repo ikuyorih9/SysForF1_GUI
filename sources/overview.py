@@ -120,13 +120,24 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     nome = cursor.fetchone()[0]
 
     
+    # Query para contar a quantidade de corridas ganhas por uma escuderia
     cursor.execute("""
         SELECT COUNT(*)
         FROM RESULTS
         WHERE constructorid = %s AND rank = 1;
     """, (usuario.idoriginal,))
-
     qtdCorridasGanhas = cursor.fetchone()[0]
+
+    # Query para obter a lista das corridas ganhas com seus respectivos pilotos
+    cursor.execute("""
+        SELECT RACES.name, DRIVER.forename || ' ' || DRIVER.surname
+        FROM RESULTS
+        JOIN RACES ON RESULTS.raceid = RACES.raceid
+        JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
+        WHERE RESULTS.constructorid = %s AND RESULTS.rank = 1
+        ORDER BY RESULTS.raceid;
+    """, (usuario.idoriginal,))
+    tabelaCorridasGanhas = cursor.fetchall()
 
     cursor.execute("""
         SELECT constructorid, COUNT(DISTINCT driverid)
@@ -135,8 +146,17 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
         GROUP BY constructorid
         ORDER BY constructorid;
     """, (usuario.idoriginal,))
-
     qtdPilotos = cursor.fetchone()[1]
+
+    cursor.execute("""
+        SELECT DISTINCT DRIVER.forename || ' ' || DRIVER.surname
+        FROM RESULTS
+		JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
+        WHERE constructorid = %s
+		ORDER BY DRIVER.forename || ' ' || DRIVER.surname;
+    """, (usuario.idoriginal,))
+    tabelaPilotos = cursor.fetchall()
+
 
     cursor.execute("""
         SELECT MIN(year), MAX(year)
@@ -152,9 +172,7 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     labelTextSize = 12
     labelTextStyle = "normal"
 
-    overviewWindow.geometry(f"{600}x{350}")
-
-    fWindow = Frame(overviewWindow, bg="#2C3E50")
+    fWindow = cria_scrollable_frame(overviewWindow)
     fWindow.pack(fill="both", expand=True, padx=20, pady=20)
 
     # Título
@@ -179,6 +197,43 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
 
     cria_label(fInfos, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="w")
     cria_label(fInfos, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+
+    # TABELA DE CORRIDAS GANHAS
+    corridasGanhasFrame = Frame(fWindow, bg="#2C3E50")
+    corridasGanhasFrame.pack(fill="x", pady=10)
+
+    # Cria label de título para a tabela.
+    cria_label(corridasGanhasFrame, "Corridas Ganhas", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de corridas ganhas.
+    corridasGanhasTabela = ttk.Treeview(corridasGanhasFrame, columns=("Corrida", "Piloto"), show="headings")
+    corridasGanhasTabela.heading("Corrida", text="Corrida")
+    corridasGanhasTabela.heading("Piloto", text="Piloto")
+
+    if tabelaCorridasGanhas:
+        for tupla in tabelaCorridasGanhas:
+            corida, piloto = tupla
+            corridasGanhasTabela.insert("", "end", values=(corida, piloto))
+    
+    corridasGanhasTabela.pack(padx = 10, pady = 5, fill="x")
+
+    # TABELA DE PILOTOS
+    pilotosFrame = Frame(fWindow, bg="#2C3E50")
+    pilotosFrame.pack(fill="x", pady=10)
+
+    # Cria label de título para a tabela.
+    cria_label(pilotosFrame, "Pilotos que correram pela escuderia", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de pilotos.
+    pilotosTabela = ttk.Treeview(pilotosFrame, columns=("Piloto"), show="headings")
+    pilotosTabela.heading("Piloto", text="Piloto")
+
+    if tabelaPilotos:
+        for tupla in tabelaPilotos:
+            piloto = tupla
+            pilotosTabela.insert("", "end", values=(piloto))
+    
+    pilotosTabela.pack(padx = 10, pady = 5, fill="x")
 
     fButton = Frame(fWindow, bg="#2C3E50")
     fButton.pack(pady=10)
