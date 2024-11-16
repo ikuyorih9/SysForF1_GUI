@@ -10,7 +10,7 @@ width = 1000
 height = 600
 def abreRelatorioPiloto(connection, window, usuario):
     window.mainloop()
-    
+
 def abreRelatorioEscuderia(connection, window, usuario):
     window.mainloop()
 
@@ -73,7 +73,7 @@ def abreRelatorio(connection, usuario):
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
     window.configure(bg="#2C3E50")
-    window.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(window))
+    window.protocol("WM_DELETE_WINDOW", lambda:go_back(window))
 
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
