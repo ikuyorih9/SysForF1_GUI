@@ -4,6 +4,7 @@ from tkinter import Toplevel
 from sources.cadastro import *
 from sources.navigation import *
 from sources.layouts import *
+from sources.user import *
 from PIL import Image, ImageTk
 
 width = 1000
@@ -15,83 +16,73 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     if usuario is None:
         return -1
 
-    nome = "unknown"
-    ano = -1
-    tipo = ""
-    idoriginal = ""
     cursor = connection.cursor()
 
-    # Pega uma (e única) tupla da resposta.
-    idoriginal = usuario.idoriginal
+    cursor.execute("SELECT forename || ' ' || surname FROM Driver WHERE driverid = %s;", (usuario.idoriginal,))
+    nome = cursor.fetchone()[0]
 
-    if idoriginal:
-        cursor.execute("SELECT forename || ' ' || surname FROM Driver WHERE driverid = %s;", (idoriginal,))
-        nome = cursor.fetchone()[0]
+    cursor.execute("""
+        SELECT DISTINCT Constructors.name, Races.year 
+        FROM Results, Constructors, Races 
+        WHERE Results.driverid = %s AND 
+            Results.constructorid = Constructors.constructorid AND 
+            Results.raceid = Races.raceid ORDER BY Races.year DESC LIMIT 1;
+    """, (usuario.idoriginal,))
+    resultado = cursor.fetchone()
+    escuderia, ano = resultado
 
-        cursor.execute("""
-            SELECT DISTINCT Constructors.name, Races.year 
-            FROM Results, Constructors, Races 
-            WHERE Results.driverid = %s AND 
-                Results.constructorid = Constructors.constructorid AND 
-                Results.raceid = Races.raceid ORDER BY Races.year DESC LIMIT 1;
-        """, (idoriginal,))
-        resultado = cursor.fetchone()
-        escuderia, ano = resultado
+    cursor.execute("""
+        SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
+        FROM Results 
+            JOIN Constructors ON Results.constructorid = Constructors.constructorid
+            JOIN Races ON Results.raceid = Races.raceid
+        WHERE Results.driverid = %s;
+    """, (usuario.idoriginal,))
+    primeiroano, ultimoano = cursor.fetchone()
 
-        cursor.execute("""
-            SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
-            FROM Results 
-                JOIN Constructors ON Results.constructorid = Constructors.constructorid
+    cursor.execute("""
+        SELECT Races.year, Circuits.name AS circuito, 
+                    SUM(Results.points) AS total_pontos, 
+                    SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
+                FROM Results
                 JOIN Races ON Results.raceid = Races.raceid
-            WHERE Results.driverid = %s;
-        """, (idoriginal,))
-        primeiroano, ultimoano = cursor.fetchone()
+                JOIN Circuits ON Races.circuitid = Circuits.circuitid
+                WHERE Results.driverid = 1
+                GROUP BY Races.year, Circuits.name
+                ORDER BY Races.year, Circuits.name;
 
-
-        cursor.execute("""
-            SELECT Races.year, Circuits.name AS circuito, 
-                        SUM(Results.points) AS total_pontos, 
-                        SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
-                    FROM Results
-                    JOIN Races ON Results.raceid = Races.raceid
-                    JOIN Circuits ON Races.circuitid = Circuits.circuitid
-                    WHERE Results.driverid = 1
-                    GROUP BY Races.year, Circuits.name
-                    ORDER BY Races.year, Circuits.name;
-
-        """, (idoriginal,))
+    """, (usuario.idoriginal,))
         
-
     resultado2 = cursor.fetchall()
 
+    # FRAME PARA O CABEÇALHO
+    fHeader = Frame(overviewWindow, bg="white")
+    fHeader.pack(padx=10, pady=5)
 
-    # Configura estilos
-    titleTextSize = 16
-    titleTextStyle = "bold"
-    labelTextSize = 12
-    labelTextStyle = "normal"
+    # Adiciona o label para o título.
+    lTitulo = cria_label(fHeader, "Informações do Piloto",fontsize=16, fontstyle="bold")
+    lTitulo.grid(row=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
-    # Título
-    title_label = cria_label(overviewWindow, text="Informações do Piloto",fontsize=titleTextSize, fontstyle=titleTextStyle)
-    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
+    # Adiciona labels de usuário.
+    cria_label(fHeader, "Usuário:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, usuario.login).grid(row=1, column=1, padx=5, pady=5, sticky="e")
 
-    # Adiciona labels de informações
-    cria_label(overviewWindow, text="Usuário:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, text=usuario.login, fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    # Adiciona labels de nome.
+    cria_label(fHeader, "Nome:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, nome).grid(row=2, column=1, padx=5, pady=5, sticky="e")
 
-    cria_label(overviewWindow, text="Nome:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, text=nome, fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    # Adiciona labels de escuderia.
+    cria_label(fHeader, "Escuderia:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, f"{escuderia} ({ano})").grid(row=3, column=1, padx=5, pady=5, sticky="e")
 
-    cria_label(overviewWindow, text="Escuderia:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, text=f"{escuderia} ({ano})", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
-
-    cria_label(overviewWindow, text="Atividade:", fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    cria_label(overviewWindow, text=str(primeiroano) + " - " + str(ultimoano), fontsize=labelTextSize, fontstyle=labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    # Adiciona labels de período de atividade
+    cria_label(fHeader, "Atividade:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, str(primeiroano) + " - " + str(ultimoano)).grid(row=4, column=1, padx=5, pady=5, sticky="e")
     
-    pilotoFrame = Frame(overviewWindow)
-    pilotoFrame.grid(row = 5, column = 0, padx=5, pady=5)
+    # FRAME PARA AS TABELAS
+    pilotoFrame = Frame(overviewWindow, bg="#2C3E50")
+    pilotoFrame.pack(padx=10, pady=5, fill="x")
 
-   
     pilotoTabela = ttk.Treeview(pilotoFrame, columns=("Ano", "Circuito", "Total_Pontos", "Total_Vitorias"), show="headings")
     pilotoTabela.heading("Ano", text="Ano")
     pilotoTabela.heading("Circuito", text="Circuito")
@@ -103,13 +94,13 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
             ano, circuito, total_pontos, total_vitorias = tupla
             pilotoTabela.insert("", "end", values=(ano, circuito, total_pontos, total_vitorias))
 
-    pilotoTabela.grid(row = 5)
+    pilotoTabela.pack(fill="x")
 
     # Centraliza as colunas
     overviewWindow.grid_columnconfigure(0, weight=1)
     overviewWindow.grid_columnconfigure(1, weight=1) 
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
+    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
 
 def abreOverviewEscuderia(connection, overviewWindow, usuario):
@@ -118,7 +109,6 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
 
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
     nome = cursor.fetchone()[0]
-
     
     # Query para contar a quantidade de corridas ganhas por uma escuderia
     cursor.execute("""
@@ -422,6 +412,7 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
 
 
 def abreOverview(connection, usuario):
+    imprimeUsuario(usuario)
     # Configura a janela principal.
     window = Toplevel()
     window.title("Overview")

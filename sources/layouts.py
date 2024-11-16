@@ -3,7 +3,7 @@ from tkinter import ttk
 
 # FUNÇÕES PARA CRIAÇÃO DE LABELS
 
-def cria_label(parent, text=None, fontsize=12, fontstyle="normal"):
+def cria_label(parent, text, fontsize=12, fontstyle="normal"):
     return Label(parent, text=text, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, fontstyle))
     
 def cria_label_image(parent, text=None, fontsize=12, formattype="normal", image=None):
