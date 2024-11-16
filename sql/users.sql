@@ -213,3 +213,6 @@ SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
 FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
 GROUP BY Seasons.year
 ORDER BY Seasons.year ASC;
+
+SELECT * FROM DRIVER ORDER BY driverid DESC LIMIT 10;
+SELECT * FROM USERS ORDER BY userid DESC LIMIT 10;

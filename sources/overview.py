@@ -245,7 +245,7 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     cria_label_image(fHeader, "Usuário: " + usuario.login + " ", 14, "bold", imagem).grid(row=0, column=0, columnspan=2, padx=5, pady=10)
 
     # Cria botões de cadastro
-    cria_botao(fHeader, "Cadastrar Piloto", 12, cadastrarEscuderia).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    cria_botao(fHeader, "Cadastrar Piloto", 12, lambda: go_forward(overviewWindow, lambda: cadastrar(connection, 1))).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
     cria_botao(fHeader, "Cadastrar Escuderia", 12, lambda: go_forward(overviewWindow, lambda: cadastrar(connection, 2))).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
 
     # Label para a quantidade total de pilotos, 

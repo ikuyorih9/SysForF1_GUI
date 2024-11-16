@@ -14,6 +14,24 @@ def cria_label_image(parent, text, fontsize, formattype, image):
 def cria_botao(parent, text, fontsize, command):
     return  Button(parent, text=text, command=command, bg="#3498DB", fg="white", font=("Montserrat", fontsize), relief=GROOVE)
 
+def cria_entry(parent, backtext, fontsize):
+    def on_entry_click(event, entry, placeholder):
+        if entry.get() == placeholder:
+            entry.delete(0, "end")
+            entry.insert(0, '')
+            entry.config(fg = 'black')
+
+    def on_focusout(event, entry, placeholder):
+        if entry.get() == '':
+            entry.insert(0, placeholder)
+            entry.config(fg = 'grey')
+
+    entry = Entry(parent, font=("Montserrat", fontsize), fg='grey')
+    entry.bind('<FocusIn>', lambda event: on_entry_click(event, entry, backtext))
+    entry.bind('<FocusOut>', lambda event: on_focusout(event, entry, backtext))
+    entry.insert(0, backtext)
+    return entry
+
 # FUNÇÃO PARA CRIAÇÃO DE FRAME SCROLLAVEL
 def cria_scrollable_frame(parent):
     # Evento para atualizar o tamanho do canvas quando os widgets são adicionados.
