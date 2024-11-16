@@ -22,3 +22,4 @@ def go_back(current_window):
     print(window.title())
     if not window.winfo_viewable():
         window.deiconify()
+    return window

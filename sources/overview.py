@@ -1,11 +1,12 @@
 from tkinter import *
+from tkinter import ttk
 from tkinter import messagebox
 from tkinter import Toplevel
 from tkinter import PhotoImage
-from tkinter import ttk
 from sources import user
 from sources import cadastro
 from sources import navigation
+from sources.layouts import *
 from PIL import Image, ImageTk
 
 width = 1000
@@ -73,21 +74,21 @@ def abreOverviewPiloto(connection, window, usuario):
     style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
 
     # Título
-    title_label = ttk.Label(window, text="Informações do Piloto", style="Title.TLabel")
+    title_label = cria_label(window, text="Informações do Piloto", style="Title.TLabel")
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     # Adiciona labels de informações
-    ttk.Label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Escuderia:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=f"{escuderia} ({ano})", style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Escuderia:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=f"{escuderia} ({ano})", style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Atividade:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=str(primeiroano) + " - " + str(ultimoano), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Atividade:", style="TLabel").grid(row=4, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=str(primeiroano) + " - " + str(ultimoano), style="TLabel").grid(row=4, column=1, padx=5, pady=5, sticky="w")
     
     pilotoFrame = Frame(window)
     pilotoFrame.grid(row = 5, column = 0, padx=5, pady=5)
@@ -141,18 +142,18 @@ def abreOverviewEscuderia(connection, window, usuario):
     style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"), background="#2C3E50", foreground="#ECF0F1")
 
     # Título
-    title_label = ttk.Label(window, text="Informações da Escuderia", style="Title.TLabel")
+    title_label = cria_label(window, text="Informações da Escuderia", style="Title.TLabel")
     title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
 
     # Adiciona labels de informações
-    ttk.Label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Usuário:", style="TLabel").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=usuario.login, style="TLabel").grid(row=1, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Nome:", style="TLabel").grid(row=2, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=nome, style="TLabel").grid(row=2, column=1, padx=5, pady=5, sticky="w")
 
-    ttk.Label(window, text="Quantidade de pilotos:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
-    ttk.Label(window, text=str(qtdPilotos), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(window, text="Quantidade de pilotos:", style="TLabel").grid(row=3, column=0, padx=5, pady=5, sticky="e")
+    cria_label(window, text=str(qtdPilotos), style="TLabel").grid(row=3, column=1, padx=5, pady=5, sticky="w")
 
     # Centraliza as colunas
     window.grid_columnconfigure(0, weight=1)
@@ -160,30 +161,11 @@ def abreOverviewEscuderia(connection, window, usuario):
 
 def abreOverviewAdministrador(connection, overviewWindow, usuario):
     def sair():
-        nonlocal returnValue
-        navigation.go_back(overviewWindow)
-
-    returnValue = 0
-
-    print("TELA: ", overviewWindow.title())
-
-    mainFrame = Frame(overviewWindow)
-    mainFrame.pack(fill="both", expand=True)
+        navigation.go_back(overviewWindow).destroy()
 
     cursor = connection.cursor()
 
-    imagem_original = Image.open("./images/key.png")
-    imagem_redimensionada = imagem_original.resize((12, 12))
-    imagem = ImageTk.PhotoImage(imagem_redimensionada)  
-      
-    headerFrame = Frame(mainFrame)
-    headerFrame.grid(row=0, columnspan=4,padx=5, pady=5, sticky="nsew")
-
-    # Label para o nome de usuário.
-    Label(headerFrame, text="Usuário: " + usuario.login + " ", image=imagem, compound="right").grid(row=0, column=0, padx=5, sticky="w")
-
-    Button(headerFrame, text="Cadastrar Piloto", command=lambda: sair(1)).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
-    Button(headerFrame, text="Cadastrar escuderia", command=lambda: sair(2)).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
+    # BUSCAS (QUERIES)
 
     cursor.execute("""
         SELECT COUNT(DISTINCT driverid)
@@ -193,11 +175,6 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     if resultado:
         qtdPilotos = resultado[0]
 
-    # Label para a quantidade total de pilotos
-    Label(mainFrame, text = "Quantidade de pilotos: " + str(qtdPilotos)).grid(row = 1, column = 0, padx=5, pady=5, sticky="w")
-    
-    # SEÇÃO DE ESCUDERIA
-
     cursor.execute("""
         SELECT COUNT(DISTINCT constructorid)
         FROM Constructors;
@@ -205,18 +182,6 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     resultado = cursor.fetchone()
     if resultado:
         qtdEscuderias = resultado[0]
-
-    # Label para a quantidade total de escuderias
-
-
-    escuderiasFrame = Frame(mainFrame)
-    escuderiasFrame.grid(row = 2, column = 0, padx=5, pady=5)
-
-    Label(escuderiasFrame, text = "Quantidade de escuderias: " + str(qtdEscuderias)).grid(row = 0, column = 0, pady=5, sticky="w")
-
-    escuderiaTabela = ttk.Treeview(escuderiasFrame, columns=("Escuderia", "Pilotos"), show="headings")
-    escuderiaTabela.heading("Escuderia", text="Escuderia")
-    escuderiaTabela.heading("Pilotos", text="Qtd. Pilotos")
 
     cursor.execute("""
         SELECT Constructors.constructorid, Constructors.name, COUNT(DISTINCT driverid)
@@ -235,16 +200,6 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     """)
     escuderias = cursor.fetchall()
 
-    if escuderias:
-        for tupla in escuderias:
-            id, nome, qtdPilotos = tupla
-            escuderiaTabela.insert("", "end", values=(nome, qtdPilotos))
-    
-    escuderiaTabela.grid(row = 1)
-
-    
-    # SEÇÃO DE CIRCUITOS
-
     cursor.execute("""
         SELECT COUNT(DISTINCT raceid)
         FROM RACES;
@@ -253,40 +208,13 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     if resultado:
         qtdCircuitos = resultado[0]
 
-    # Label para a quantidade total de escuderias
-
-    circuitosFrame = Frame(mainFrame)
-    circuitosFrame.grid(row = 2, column = 1, padx=5, pady=5)
-
-    Label(circuitosFrame, text = "Quantidade de circuitos: " + str(qtdCircuitos)).grid(row = 0, column = 0, pady=5, sticky="w")
-
-    circuitosTabela = ttk.Treeview(circuitosFrame, columns=("Circuito", "Corridas"), show="headings")
-    circuitosTabela.heading("Circuito", text="Circuito")
-    circuitosTabela.heading("Corridas", text="Qtd. Corridas")
-
     cursor.execute("""
         SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
         FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
         GROUP BY (Circuits.circuitid, Circuits.name)
         ORDER BY Circuits.circuitid
     """)
-    resultado = cursor.fetchall()
-    if resultado:
-        for tupla in resultado:
-            id, nome, qtd = tupla
-            circuitosTabela.insert("", "end", values=(nome, qtd))
-
-    circuitosTabela.grid(row = 1)
-
-
-    # SEÇÃO DE TEMPORADA
-
-    seasonFrame = Frame(mainFrame)
-    seasonFrame.grid(row = 4, columnspan=2, padx=5, pady=5)
-
-    seasonTabela = ttk.Treeview(seasonFrame, columns=("Temporada", "Corridas"), show="headings")
-    seasonTabela.heading("Temporada", text="Circuito")
-    seasonTabela.heading("Corridas", text="Qtd. Corridas")
+    circuitos = cursor.fetchall()
 
     cursor.execute("""
         SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
@@ -294,19 +222,103 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
         GROUP BY Seasons.year
         ORDER BY Seasons.year ASC;
     """)
-    resultado = cursor.fetchall()
+    temporadas = cursor.fetchall()
 
-    if resultado:
-        for tupla in resultado:
+    mainFrame = cria_scrollable_frame(overviewWindow)
+
+    # HEADER DO OVERVIEW
+    # Cria um frame para conter o cabeçalho.
+    fHeader = Frame(mainFrame, bg="#2C3E50")
+    fHeader.pack(padx=10,pady=10)
+
+    # Carrega uma imagem e redimensiona.
+    imagem_original = Image.open("./images/key.png")
+    imagem_redimensionada = imagem_original.resize((12, 12))
+    imagem = ImageTk.PhotoImage(imagem_redimensionada)  
+
+    # Cria label para o nome de usuário.
+    cria_label_image(fHeader, "Usuário: " + usuario.login + " ", 14, "bold", imagem).grid(row=0, column=0, columnspan=2, padx=5, pady=10)
+
+    # Cria botões de cadastro
+    cria_botao(fHeader, "Cadastrar Piloto", 12, sair).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    cria_botao(fHeader, "Cadastrar Escuderia", 12, sair).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
+
+    # Label para a quantidade total de pilotos, 
+    cria_label(fHeader, "Quantidade de pilotos cadastrados: ", 12, "normal").grid(row = 2, column = 0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, str(qtdPilotos), 12, "normal").grid(row = 2, column = 1, padx=5, pady=5, sticky="e")
+
+    # Label para a quantidade total de escuderias
+    cria_label(fHeader, "Quantidade de escuderias cadastradas: ", 12, "normal").grid(row = 3, column = 0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, str(qtdEscuderias), 12, "normal").grid(row = 3, column = 1, padx=5, pady=5, sticky="e")
+
+    # Label para a quantidade total de circuitos
+    cria_label(fHeader, "Quantidade de circuitos cadastrados: ", 12, "normal").grid(row = 4, column = 0, padx=5, pady=5, sticky="w")
+    cria_label(fHeader, str(qtdCircuitos), 12, "normal").grid(row = 4, column = 1, padx=5, pady=5, sticky="e")
+
+    # TABELA DE ESCUDERIAS
+    # Cria um frame para conter a tabela de escuderias.
+    fEscuderia = Frame(mainFrame, bg="#2C3E50")
+    fEscuderia.pack(fill="x", pady=10)
+
+    # Cria label de título para a tabela.
+    cria_label(fEscuderia, "Quantidade de pilotos por escuderia", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de escuderias.
+    escuderiaTabela = ttk.Treeview(fEscuderia, columns=("Escuderia", "Pilotos"), show="headings")
+    escuderiaTabela.heading("Escuderia", text="Escuderia")
+    escuderiaTabela.heading("Pilotos", text="Qtd. Pilotos")
+
+    # Adiciona as escuderias na tabela
+    if escuderias:
+        for tupla in escuderias:
+            id, nome, qtdPilotos = tupla
+            escuderiaTabela.insert("", "end", values=(nome, qtdPilotos))
+    
+    escuderiaTabela.pack(padx = 10, pady = 5, fill="x")
+
+    
+    # TABELA DE CIRCUITOS
+    # Cria um frame para a tabela de circuitos.
+    fCircuitos = Frame(mainFrame, bg="#2C3E50")
+    fCircuitos.pack(pady=10, fill="x")
+
+    # Cria label de título para a tabela.
+    cria_label(fCircuitos, "Quantidade de corridas por circuito", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de circuitos.
+    circuitosTabela = ttk.Treeview(fCircuitos, columns=("Circuito", "Corridas"), show="headings")
+    circuitosTabela.heading("Circuito", text="Circuito")
+    circuitosTabela.heading("Corridas", text="Qtd. Corridas")
+
+    if circuitos:
+        for tupla in circuitos:
+            id, nome, qtd = tupla
+            circuitosTabela.insert("", "end", values=(nome, qtd))
+
+    circuitosTabela.pack(padx = 10, pady = 5, fill="x")
+
+    # TABELA DE TEMPORADA
+    # Cria um frame para a tabela de temporada.
+    fSeason = Frame(mainFrame, bg="#2C3E50")
+    fSeason.pack(pady=10, fill="x")
+
+    # Cria label de título para a tabela.
+    cria_label(fSeason, "Quantidade de corridas por temporada", 12, "normal").pack(fill="x")
+
+    # Cria a tabela de temporadas.
+    seasonTabela = ttk.Treeview(fSeason, columns=("Temporada", "Corridas"), show="headings")
+    seasonTabela.heading("Temporada", text="Temporada")
+    seasonTabela.heading("Corridas", text="Qtd. Corridas")
+
+    if temporadas:
+        for tupla in temporadas:
             ano, qtd = tupla
             seasonTabela.insert("", "end", values=(ano, qtd))
 
-    seasonTabela.grid(row = 0)
-    #overviewWindow.after(500)
-    #overviewWindow.deiconify()
+    seasonTabela.pack(padx = 10, pady = 5, fill="x")
+
     overviewWindow.protocol("WM_DELETE_WINDOW", sair)
     overviewWindow.mainloop()
-    return returnValue
 
 
 def abreOverview(connection, usuario):
@@ -316,8 +328,8 @@ def abreOverview(connection, usuario):
     window.title("Overview")
     window.geometry(f"{width}x{height}")
     window.resizable(True, True)
-
     window.configure(bg="#2C3E50")
+
 
     # Função para carregar as informações conforme o tipo do usuário
     if usuario.tipo == 'Piloto':
@@ -327,6 +339,3 @@ def abreOverview(connection, usuario):
     elif usuario.tipo == 'Administrador':
         tipoCadastro = abreOverviewAdministrador(connection, window, usuario)
         cadastro.cadastrar(connection, tipoCadastro)
-
-
-    window.mainloop()
