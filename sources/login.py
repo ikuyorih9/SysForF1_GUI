@@ -1,3 +1,4 @@
+from sources import navigation
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
@@ -30,8 +31,9 @@ def abreLogin(connection):
             userid = resultado
             registraLogin(userid)
             returnValue = 1
+            navigation.push(window)
+            window.withdraw()
             window.quit()
-            window.destroy()
             return
         else:
             print("NOT_FOUND_DB: usuario nao foi encontrado na base.")
@@ -40,7 +42,6 @@ def abreLogin(connection):
 
     def sair():
         nonlocal returnValue
-        window.quit()
         window.destroy()
         returnValue = 0
 
@@ -62,6 +63,7 @@ def abreLogin(connection):
     window.resizable(False, False)
     window.configure(bg="#2C3E50")
 
+    # Abre imagem no ícone de usuário
     img = Image.open("./images/user.png")
     img = img.resize((60, 60), Image.LANCZOS)
     photo = ImageTk.PhotoImage(img)
