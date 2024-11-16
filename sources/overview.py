@@ -5,6 +5,7 @@ from sources.cadastro import *
 from sources.navigation import *
 from sources.layouts import *
 from sources.user import *
+from sources.relatorio import *
 from PIL import Image, ImageTk
 
 width = 1000
@@ -96,9 +97,11 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
 
     pilotoTabela.pack(fill="x")
 
-    # Centraliza as colunas
-    overviewWindow.grid_columnconfigure(0, weight=1)
-    overviewWindow.grid_columnconfigure(1, weight=1) 
+    fFooter = Frame(overviewWindow, bg="#2C3E50")
+    fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
+
+    cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
 
     overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
@@ -163,7 +166,6 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     labelTextStyle = "normal"
 
     fWindow = cria_scrollable_frame(overviewWindow)
-    fWindow.pack(fill="both", expand=True, padx=20, pady=20)
 
     # Título
     title_label = cria_label(fWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
@@ -225,17 +227,16 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     
     pilotosTabela.pack(padx = 10, pady = 5, fill="x")
 
-    fButton = Frame(fWindow, bg="#2C3E50")
-    fButton.pack(pady=10)
+    fFooter = Frame(fWindow, bg="#2C3E50")
+    fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
 
-    bVoltar = cria_botao(fButton, "Sair", 12, lambda: go_back(overviewWindow))
-    bVoltar.pack(padx=10)
-
+    cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
     # Centraliza as colunas
     overviewWindow.grid_columnconfigure(0, weight=1)
     overviewWindow.grid_columnconfigure(1, weight=1)
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
+    overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
 
 def abreOverviewAdministrador(connection, overviewWindow, usuario):
@@ -402,10 +403,10 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     seasonTabela.pack(padx = 10, pady = 5, fill="x")
 
     fFooter = Frame(mainFrame, bg="#2C3E50")
-    fFooter.pack(padx=10,pady=10, fill="x")
+    fFooter.pack(padx=10,pady=10, fill="x", side="bottom")
 
     cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
-
+    cria_botao(fFooter, "Relatório", 12, lambda: go_forward(overviewWindow, lambda: abreRelatorio() )).pack(side="right")
 
     overviewWindow.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(overviewWindow))
     overviewWindow.mainloop()
