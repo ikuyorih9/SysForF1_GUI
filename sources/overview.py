@@ -4,8 +4,8 @@ from tkinter import messagebox
 from tkinter import Toplevel
 from tkinter import PhotoImage
 from sources import user
-from sources import cadastro
-from sources import navigation
+from sources.cadastro import *
+from sources.navigation import *
 from sources.layouts import *
 from PIL import Image, ImageTk
 
@@ -160,8 +160,13 @@ def abreOverviewEscuderia(connection, window, usuario):
     window.grid_columnconfigure(1, weight=1)
 
 def abreOverviewAdministrador(connection, overviewWindow, usuario):
-    def sair():
-        navigation.go_back(overviewWindow).destroy()
+    def cadastrarEscuderia():
+        push(overviewWindow)
+        imprimeTracking()
+        if overviewWindow.winfo_viewable():
+            overviewWindow.withdraw()
+            overviewWindow.quit()
+        cadastrar(connection, 2)
 
     cursor = connection.cursor()
 
@@ -240,8 +245,8 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     cria_label_image(fHeader, "Usuário: " + usuario.login + " ", 14, "bold", imagem).grid(row=0, column=0, columnspan=2, padx=5, pady=10)
 
     # Cria botões de cadastro
-    cria_botao(fHeader, "Cadastrar Piloto", 12, sair).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
-    cria_botao(fHeader, "Cadastrar Escuderia", 12, sair).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
+    cria_botao(fHeader, "Cadastrar Piloto", 12, cadastrarEscuderia).grid(row=1, column=0, padx=15, pady=5, sticky="nsew")
+    cria_botao(fHeader, "Cadastrar Escuderia", 12, lambda: go_forward(overviewWindow, lambda: cadastrar(connection, 2))).grid(row=1, column=1, padx=15, pady=5, sticky="nsew")
 
     # Label para a quantidade total de pilotos, 
     cria_label(fHeader, "Quantidade de pilotos cadastrados: ", 12, "normal").grid(row = 2, column = 0, padx=5, pady=5, sticky="w")
@@ -317,12 +322,17 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
 
     seasonTabela.pack(padx = 10, pady = 5, fill="x")
 
-    overviewWindow.protocol("WM_DELETE_WINDOW", sair)
+    fFooter = Frame(mainFrame, bg="#2C3E50")
+    fFooter.pack(padx=10,pady=10, fill="x")
+
+    cria_botao(fFooter, "Logout", 12, lambda:go_back(overviewWindow)).pack(side="left")
+
+
+    overviewWindow.protocol("WM_DELETE_WINDOW", close_all_windows)
     overviewWindow.mainloop()
 
 
 def abreOverview(connection, usuario):
-    navigation.imprimeTracking()
     # Configura a janela principal.
     window = Toplevel()
     window.title("Overview")
@@ -337,5 +347,5 @@ def abreOverview(connection, usuario):
     elif usuario.tipo == 'Escuderia':
         abreOverviewEscuderia(connection, window, usuario)
     elif usuario.tipo == 'Administrador':
-        tipoCadastro = abreOverviewAdministrador(connection, window, usuario)
-        cadastro.cadastrar(connection, tipoCadastro)
+        abreOverviewAdministrador(connection, window, usuario)
+        
