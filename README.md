@@ -197,7 +197,7 @@ def registraLogin(userid):
     connection.commit()
 ```
 
-# 🌐 *CONEXÃO*
+# 🌐 Conexão com a base de dados
 
 Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
 
@@ -233,54 +233,115 @@ cursor.execute("comando SQL")
 connection.commit() # Para casos de insert, update ou delete.
 ```
 
-# 💻 *TELAS*
+# 💻 Telas do sistema
 
-### *Login:*
+## *Login*
 
 A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-se criar telas, labels, botões etc.
 
-A tela de ***Login*** apresenta um campo de *usuário* e de *senha*, e aguarda o botão de *sign in* para confirmar o acesso. A função executada pelo botão é a `login()`, que busca o login e senha da tabela ***Users*** e compara com o texto dos campos. Se o usuário estiver cadastrado, a próxima tela deve aparecer. Caso a correspondência seja falsa, uma *messagebox* é acionada para o login inválido.
+A tela de ***Login*** apresenta um campo de *usuário* e de *senha*, e aguarda o botão de *sign in* para confirmar o acesso. A função executada pelo botão é a `login()`, que busca o login e senha da tabela USERS e compara com o texto dos campos. Se o usuário estiver cadastrado, a próxima tela deve aparecer. Caso a correspondência seja falsa, uma *messagebox* é acionada para o login inválido. Se o *Sign up* acontecer, as informações de usuário são salvos numa tabela de LOGS.
 
 ```
 def login():
-        nonlocal returnValue
-        nonlocal usuario
+    usuario = lNome.get()
+    senha = hashlib.md5(lSenha.get().encode()).hexdigest()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM Users WHERE login = %s AND password = %s;", (usuario, senha))
+    resultado = cursor.fetchone()
+    if resultado:
+        # Obtém o userid da busca.
+        usuario = Usuario(resultado[0], resultado[1], resultado[2], resultado[3], resultado[4])
 
-        usuario = Nome.get()
-        senha = hashlib.md5(Senha.get().encode()).hexdigest()
-        
-        cursor.execute("SELECT userid, login, password FROM Users")
-        users = cursor.fetchall()
+        # Salva o log de login
+        data = datetime.now()
+        cursor.execute("INSERT INTO Log_Table(userid, data) VALUES (%s,%s);", (usuario.userid, data))
+        connection.commit()
 
-        for user in users:
-            userid, login, password = user
-            if login == usuario and password == senha:
-                registraLogin(userid)
+        go_forward(window, lambda:abreOverview(connection, usuario))
+        return
+    else:
+        print("NOT_FOUND_DB: usuario nao foi encontrado na base.")
 
-                returnValue = 1
-                window.quit()
-                window.destroy()
-                return
-        
-        messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
+    messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 ```
 
-### *Overview:*
+## Overview
 
-A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um Piloto, uma Escuderia ou um Administrador. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
+A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um **Piloto**, uma **Escuderia** ou um **Administrador**. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
 
-Para Pilotos, são mostradas informações pessoais, escuderia atual, período de atividade e um resumo de desempenho em corridas.
+### Administrador
 
-Para Escuderias, são exibidas informações sobre a escuderia, vitórias, pilotos associados e um resumo de desempenho em corridas.
+Apresenta informações para um usuário **Administrador**:
 
-Para Administradores, são apresentadas estatísticas gerais do sistema, como quantidade de pilotos, escuderias, circuitos e temporadas, além de permitir o cadastro de novos pilotos e escuderias.
+* **Quantidade de pilotos cadastrados;**
 
-### *Relatório:*
+```
+SELECT COUNT(DISTINCT driverid)
+FROM Driver;
+```
+* **Quantidade de escuderias cadastradas**
+```
+SELECT COUNT(DISTINCT constructorid)
+FROM Constructors;
+```
+* **Quantidade de pilotos por escuderia;**
+```
+SELECT Constructors.constructorid, Constructors.name, COUNT(DISTINCT driverid)
+FROM RESULTS, RACES, Constructors
+WHERE Races.raceid = Results.raceid AND
+    Results.constructorid = Constructors.constructorid AND 
+    (driverid, year) IN (
+        SELECT DISTINCT driverid, MAX(year)
+        FROM RESULTS, RACES
+        WHERE Races.raceid = Results.raceid
+        GROUP BY (driverid)
+        ORDER BY driverid
+    )
+GROUP BY (Constructors.constructorid, Constructors.name)
+ORDER BY constructorid;
+```
+* **Quantidade de circuitos cadastrados;**
+```
+SELECT COUNT(DISTINCT raceid)
+FROM RACES;
+```
+* **Quantidade de corridas por circuito;**
+```
+SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
+FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+GROUP BY (Circuits.circuitid, Circuits.name)
+ORDER BY Circuits.circuitid
+```
+* **Quantidade de corridas por temporada.**
+```
+SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
+FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
+GROUP BY Seasons.year
+ORDER BY Seasons.year ASC;
+```
+
+### Escuderia
+
+Apresenta informações para um usuário **Construtor**, como:
+
+* **Quantidade e vitórias da escuderia;**
+* **Quantidade de pilotos diferentes que já correram pela escuderia;**
+* **Primeiro e último ano em que há dados da escuderia na base.**
+
+### Piloto
+
+Apresenta informações para um usuário **Piloto**, como:
+
+* **Primeiro e último ano em que há dados do piloto na base;**
+* **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos;**
+* **Para cada ano de competição e cada circuito, a quantidade de vitórias.**
+
+## Relatórios
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
 
-Para Pilotos, a tela de relatório ainda não está implementada.
+# ⚙️ Configurações do sistema
 
-Para Escuderias, são exibidos relatórios sobre os pilotos da escuderia e suas vitórias, além de um resumo dos status das corridas.
+## Layout
 
-Para Administradores, são apresentados relatórios sobre a quantidade de resultados por status e aeroportos brasileiros de médio/grande porte a menos de 100km de uma cidade específica.
+## Navegação
