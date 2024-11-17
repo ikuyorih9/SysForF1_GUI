@@ -27,6 +27,9 @@ def abreRelatorioAdmin(connection, window, usuario):
         """, (cidade,))
         resultado = cursor.fetchall()
         if resultado:
+            for item in tabela.get_children():
+                tabela.delete(item)
+            
             for tupla in resultado:
                 print(cidade)
                 print(tupla)
