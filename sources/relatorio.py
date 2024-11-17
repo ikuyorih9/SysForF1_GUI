@@ -9,6 +9,66 @@ from sources.user import *
 width = 1000
 height = 600
 def abreRelatorioPiloto(connection, window, usuario):
+    cursor = connection.cursor()
+    cursor.execute("""
+   
+    -- Consulta com ROLLUP
+    SELECT 
+        Races.year,
+        Races.name AS corrida,
+        COUNT(*) AS vitorias
+    FROM Results
+    JOIN Races ON Results.raceid = Races.raceid
+    WHERE Results.driverid = %s AND Results.position = 1
+    GROUP BY ROLLUP (Races.year, Races.name)
+    ORDER BY Races.year, Races.name;
+
+    """, (usuario.idoriginal,))
+
+    resultado = cursor.fetchall()
+
+    mainFrame = cria_scrollable_frame(window)
+    fHeader = Frame(mainFrame, bg="#2C3E50")
+    fHeader.pack(padx=10, pady=5, side="top", fill="x",expand=True)
+    cria_botao(fHeader, "Voltar", 12, lambda:go_back(window)).pack(side="left")
+
+    # cria label para título.
+    cria_label(fHeader, "Relatórios do Piloto", fontsize=24, fontstyle="bold").pack(pady=5, fill="x", expand=True, side="top")
+
+    # REPORT 1 FRAME
+    fReport1 = Frame(mainFrame, bg="#2C3E50")
+    fReport1.pack(padx=10, pady=5, fill="x")
+    cria_label(fReport1, "Quantidade de vitorias obtidas").pack(fill="x", expand=True)
+
+    # cria tabela para resultados x status.
+    cria_tabela(fReport1, ("Ano","Corrida","Vitorias"), resultado).pack(padx = 10, pady = 5, fill="x")
+
+    cursor.execute("""
+   
+    SELECT 
+        Status.status AS descricao_status,
+        COUNT(*) AS quantidade
+    FROM Results
+    JOIN Status ON Results.statusid = Status.statusid
+    WHERE Results.driverid = %s
+    GROUP BY Status.status
+    ORDER BY quantidade DESC;
+
+    """, (usuario.idoriginal,))
+
+    resultado2 = cursor.fetchall()
+
+    # REPORT 2 FRAME
+    fReport2 = Frame(mainFrame, bg="#2C3E50")
+    fReport2.pack(padx=10, pady=5, fill="x")
+
+    # cria label para a tabela.
+    cria_label(fReport2, "Quantidade de resultados por status").pack(fill="x", expand=True)
+
+    # cria tabela para segundo report.
+    tabela2 = cria_tabela(fReport2, ("Status","Quantidade"), resultado2).pack(padx = 10, pady = 5, fill="x")
+    tabela2.pack(padx = 10, pady = 5, fill="x")
+
     window.mainloop()
 
 def abreRelatorioEscuderia(connection, window, usuario):
@@ -185,7 +245,7 @@ def abreRelatorio(connection, usuario):
     window = Toplevel()
     window.title("Relatório")
     window.geometry(f"{width}x{height}")
-    window.resizable(True, True)
+    window.resizable(False, False)
     window.configure(bg="#2C3E50")
     window.protocol("WM_DELETE_WINDOW", lambda:go_back(window))
 

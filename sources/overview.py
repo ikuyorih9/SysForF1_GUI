@@ -423,7 +423,7 @@ def abreOverview(connection, usuario):
     window = Toplevel()
     window.title("Overview")
     window.geometry(f"{width}x{height}")
-    window.resizable(True, True)
+    window.resizable(False, False)
     window.configure(bg="#2C3E50")
     window.protocol("WM_DELETE_WINDOW", lambda:close_all_windows(window))
 

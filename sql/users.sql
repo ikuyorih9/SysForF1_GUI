@@ -231,6 +231,7 @@ DROP INDEX IF EXISTS idx_airport_city;
 CREATE INDEX idx_cidade ON GEOCITIES15K USING HASH (name);
 CREATE INDEX idx_type ON AIRPORTS (type);
 CREATE INDEX idx_airport_city ON AIRPORTS (city);
+CREATE INDEX idx_piloto ON Results (driverid);
 
 EXPLAIN ANALYZE
 SELECT city, iatacode, AIRPORTS.name, Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)), type
@@ -241,3 +242,14 @@ WHERE (type = 'medium_airport' OR type = 'large_airport') AND
       GEOCITIES15K.name = 'Joinville';
 
 SELECT * FROM GEOCITIES15K WHERE country = 'BR'
+
+-- Consulta com ROLLUP
+SELECT 
+    Races.year,
+    Races.name AS corrida,
+    COUNT(*) AS vitorias
+FROM Results
+JOIN Races ON Results.raceid = Races.raceid
+WHERE Results.driverid = 1 AND Results.position = 1
+GROUP BY ROLLUP (Races.year, Races.name)
+ORDER BY Races.year, Races.name;
