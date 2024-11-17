@@ -12,7 +12,95 @@ def abreRelatorioPiloto(connection, window, usuario):
     window.mainloop()
 
 def abreRelatorioEscuderia(connection, window, usuario):
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT constructors.name
+        FROM constructors
+        WHERE constructorid = %s;
+        """, (usuario.idoriginal,))
+    nomeEscuderia = cursor.fetchone()[0]
+
+    # Seleciona todos os pilotos da escuderia e conta suas vitórias.
+    cursor.execute("""
+        SELECT 
+            DRIVER.forename || ' ' || DRIVER.surname AS piloto,
+            COUNT(CASE WHEN RESULTS.rank = 1 THEN 1 ELSE NULL END) AS vitorias
+        FROM 
+            DRIVER
+        LEFT JOIN 
+            RESULTS ON DRIVER.driverid = RESULTS.driverid AND RESULTS.constructorid = %s
+        WHERE 
+            DRIVER.driverid IN (SELECT DISTINCT driverid FROM RESULTS WHERE constructorid = %s)
+        GROUP BY 
+            DRIVER.forename, DRIVER.surname
+        ORDER BY 
+            vitorias DESC;
+        """, (usuario.idoriginal, usuario.idoriginal,))
+    tabelaPilotosVitorias = cursor.fetchall()
+
+    # Seleciona todos os Status e conta as ocorrencias de cada um.
+    cursor.execute("""
+        SELECT STATUS.status, COUNT(RESULTS.statusid) AS quantidade
+        FROM RESULTS
+        JOIN STATUS ON RESULTS.statusid = STATUS.statusid
+        WHERE RESULTS.constructorid = %s
+        GROUP BY STATUS.status
+        ORDER BY quantidade DESC;
+        """, (usuario.idoriginal,))
+    tabelaStatusQuantidade = cursor.fetchall()
+
+    mainFrame = Frame(window,  bg="#2C3E50")
+    mainFrame.pack(fill="both", expand=True)
+
+    # HEADER FRAME.
+    fHeader = Frame(mainFrame, bg="#2C3E50")
+    fHeader.pack(padx=10, pady=5, side="top", fill="x",expand=True)
+
+    cria_botao(fHeader, "Voltar", 12, lambda:go_back(window)).pack(side="left")
+    # cria label para título.
+    cria_label(fHeader, f"Relatórios da {nomeEscuderia}", fontsize=24, fontstyle="bold").pack(pady=5, fill="x", expand=True, side="top")
+
+    # REPORT 1 FRAME
+    fReport1 = Frame(mainFrame, bg="#2C3E50")
+    fReport1.pack(padx=10, pady=5, fill="x")
+
+    # cria label para a tabela.
+    cria_label(fReport1, "Pilotos da escuderia e suas vitórias").pack(fill="x", expand=True)
+    
+    # cria tabela para piilotos x vitórias.
+    tabela1 = ttk.Treeview(fReport1, columns=("Pilotos","Vitórias"), show="headings")
+    tabela1.heading("Pilotos", text="Pilotos")
+    tabela1.heading("Vitórias", text="Vitórias")
+
+    if tabelaPilotosVitorias:
+       for tupla in tabelaPilotosVitorias:
+            pilotos, vitorias = tupla
+            tabela1.insert("", "end", values=(pilotos, vitorias))
+
+    tabela1.pack(padx = 10, pady = 5, fill="x")
+
+    # REPORT 2 FRAME
+    fReport2 = Frame(mainFrame, bg="#2C3E50")
+    fReport2.pack(padx=10, pady=5, fill="x")
+
+    # cria label para a tabela.
+    cria_label(fReport2, "Status e suas ocorrências").pack(fill="x", expand=True)
+
+    # cria tabela para aeroportos.
+    tabela2 = ttk.Treeview(fReport2, columns=("Status", "Ocorrências"), show="headings")
+    tabela2.heading("Status", text="Status")
+    tabela2.heading("Ocorrências", text="Ocorrências")
+
+    if tabelaStatusQuantidade:
+       for tupla in tabelaStatusQuantidade:
+            status, ocorrencias = tupla
+            tabela2.insert("", "end", values=(status, ocorrencias))
+
+    tabela2.pack(padx = 10, pady = 5, fill="x")
+    
     window.mainloop()
+
 
 def abreRelatorioAdmin(connection, window, usuario):
     cursor = connection.cursor()
