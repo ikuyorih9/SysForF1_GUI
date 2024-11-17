@@ -11,8 +11,6 @@ from PIL import Image, ImageTk
 width = 1000
 height = 600
 
-
-
 def abreOverviewPiloto(connection, overviewWindow, usuario):
     if usuario is None:
         return -1
@@ -33,11 +31,7 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     escuderia, ano = resultado
 
     cursor.execute("""
-        SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
-        FROM Results 
-            JOIN Constructors ON Results.constructorid = Constructors.constructorid
-            JOIN Races ON Results.raceid = Races.raceid
-        WHERE Results.driverid = %s;
+        SELECT * FROM AtividadePiloto(%s);
     """, (usuario.idoriginal,))
     primeiroano, ultimoano = cursor.fetchone()
 

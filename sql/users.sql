@@ -241,3 +241,35 @@ WHERE (type = 'medium_airport' OR type = 'large_airport') AND
       GEOCITIES15K.name = 'Joinville';
 
 SELECT * FROM GEOCITIES15K WHERE country = 'BR'
+
+SELECT MIN(Races.year) AS primeiro_ano, MAX(Races.year) AS ultimo_ano
+FROM Results 
+    JOIN Constructors ON Results.constructorid = Constructors.constructorid
+    JOIN Races ON Results.raceid = Races.raceid
+WHERE Results.driverid = 1;
+
+CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE (PrimeiroAno INTEGER, UltimoAno INTEGER)AS $$
+DECLARE
+    PrimeiroAno INTEGER;
+    UltimoAno INTEGER;
+BEGIN
+    SELECT DISTINCT year INTO PrimeiroAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year ASC
+    LIMIT 1;
+
+    SELECT DISTINCT year INTO UltimoAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year DESC
+    LIMIT 1;
+
+    RETURN QUERY SELECT PrimeiroAno, UltimoAno;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM AtividadePiloto(1);
+SELECT AtividadePiloto(1);
+
+
