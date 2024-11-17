@@ -344,4 +344,122 @@ A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados
 
 ## Layout
 
+Os layouts foram estabelecidos em códigos padrões, como uma interface entre o Tkinter e o usuário. Esses códigos são:
+
+* **Criar uma Label:**
+```
+def cria_label(parent, text, fontsize=12, fontstyle="normal"):
+    return Label(parent, text=text, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, fontstyle))
+```
+
+* **Criar um Button:**
+```
+def cria_botao(parent, text, fontsize=12, command = lambda:print("botão")):
+    return  Button(parent, text=text, command=command, bg="#3498DB", fg="white", font=("Montserrat", fontsize), relief=GROOVE)
+```
+
+* **Criar uma Entry:**
+```
+def cria_entry(parent, backtext, fontsize=12, width=None, show=None):
+    def on_entry_click(event, entry, placeholder):
+        if entry.get() == placeholder:
+            entry.delete(0, "end")
+            entry.insert(0, '')
+            entry.config(fg = 'black')
+
+    def on_focusout(event, entry, placeholder):
+        if entry.get() == '':
+            entry.insert(0, placeholder)
+            entry.config(fg = 'grey')
+
+    entry = Entry(parent, width=width, font=("Montserrat", fontsize), fg='grey', show=show)
+    entry.bind('<FocusIn>', lambda event: on_entry_click(event, entry, backtext))
+    entry.bind('<FocusOut>', lambda event: on_focusout(event, entry, backtext))
+    entry.insert(0, backtext)
+    return entry
+```
+
+* **Cria uma TreeView (tabela)**:
+```
+def cria_tabela(parent, columns, entries, stretch = True):
+    # Cria a tabela de escuderias.
+    table = ttk.Treeview(parent, columns=columns, show="headings")
+    for column in columns:
+        table.heading(column, text=column)
+        table.column(column, anchor = "center", stretch=stretch)  # Largura fixa de 100px
+
+    # Adiciona as escuderias na tabela
+    if entries:
+        for entry in entries:
+            table.insert("", "end", values=entry)
+
+    return table
+```
+
+* **Cria um Frame Scrollable**:
+```
+def cria_scrollable_frame(parent):
+    # Evento para atualizar o tamanho do canvas quando os widgets são adicionados.
+    def update_scroll_region(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(scrollable_frame_id, width=canvas.winfo_width())
+    
+    # Evento para permitir rolagem com o mouse
+    def on_mousewheel(event):
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    # Cria um canvas para a rolagem à esquerda.
+    canvas = Canvas(parent, bg="#2C3E50")
+    canvas.pack(side="left", fill="both", expand=True)
+
+    # Cria uma barra de rolagem à direita.
+    scrollbar = Scrollbar(parent, orient="vertical", command=canvas.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    # Coneta uma barra de rolagem ao canvas.
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    # Cria um frame geral para conter os widgets
+    scrollableFrame = Frame(canvas, bg="#2C3E50")
+    scrollable_frame_id = canvas.create_window((0,0), window=scrollableFrame, anchor="nw")
+    scrollableFrame.bind("<Configure>", update_scroll_region)
+    canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+    return scrollableFrame
+```
+
 ## Navegação
+
+A navegação entre telas foi feita através de uma pilha `Navigation`, que empilha as telas conforme elas são chamadas e as desempilha conforme são fechadas.
+
+Para voltar uma tela, executa-se a função `go_back(current_window)`, que recebe a janela atual a ser fechada.
+
+```
+def go_back(current_window):
+    current_window.destroy()
+    if Navigation:
+        window = pop()
+        if not window.winfo_viewable():
+            window.deiconify()
+```
+
+Para avançar uma tela, executa-se a função `go_forward(current_window, function_next_window)`, que adiciona a `current_window` na pilha e executa a função `function_next_window` para abrir a nova tela.
+
+```
+def go_forward(current_window, function_next_window):
+    push(current_window)
+    if current_window.winfo_viewable():
+        current_window.withdraw()
+        current_window.quit()
+    function_next_window()
+```
+
+Para fechar todas as telas, utiliza-se `close_all_windows(current_window)`, que fecha a janela principal `current_window` e todas as outras que estão na pilha de navegação.
+
+```
+def close_all_windows(current_window):
+    current_window.destroy()
+    while Navigation:
+        window = pop()
+        window.destroy()
+```
