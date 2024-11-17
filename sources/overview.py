@@ -109,6 +109,13 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
 
     cursor = connection.cursor()
 
+    cursor.execute("""
+        SELECT constructors.name
+        FROM constructors
+        WHERE constructorid = %s;
+        """, (usuario.idoriginal,))
+    nomeEscuderia = cursor.fetchone()[0]
+
     cursor.execute("SELECT name FROM Constructors WHERE constructorid = %s;", (usuario.idoriginal,))
     nome = cursor.fetchone()[0]
     
@@ -167,7 +174,7 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     fWindow = cria_scrollable_frame(overviewWindow)
 
     # Título
-    title_label = cria_label(fWindow, "Informações da Escuderia", titleTextSize, titleTextStyle)
+    title_label = cria_label(fWindow, f"Informações da {nomeEscuderia}", titleTextSize, titleTextStyle)
     title_label.pack(padx=10, pady=10)
 
     fInfos = Frame(fWindow, bg="#2C3E50")
