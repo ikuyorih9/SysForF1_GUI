@@ -222,6 +222,22 @@ FROM Results LEFT JOIN Status ON Results.statusid = Status.statusid
 GROUP BY status
 ORDER BY status;
 
-SELECT city, iatacode, 
-FROM airports
-ORDER BY name
+DROP INDEX IF EXISTS idx_country;
+DROP INDEX IF EXISTS idx_cidade;
+DROP INDEX IF EXISTS idx_type;
+DROP INDEX IF EXISTS idx_airport_city;
+
+
+CREATE INDEX idx_cidade ON GEOCITIES15K USING HASH (name);
+CREATE INDEX idx_type ON AIRPORTS (type);
+CREATE INDEX idx_airport_city ON AIRPORTS (city);
+
+EXPLAIN ANALYZE
+SELECT city, iatacode, AIRPORTS.name, Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)), type
+FROM AIRPORTS RIGHT JOIN GEOCITIES15K ON AIRPORTS.city = GEOCITIES15K.name
+WHERE (type = 'medium_airport' OR type = 'large_airport') AND
+      GEOCITIES15K.country = 'BR' AND
+      Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)) <= 100000 AND
+      GEOCITIES15K.name = 'Joinville';
+
+SELECT * FROM GEOCITIES15K WHERE country = 'BR'

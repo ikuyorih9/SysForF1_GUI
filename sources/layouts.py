@@ -62,11 +62,12 @@ def cria_scrollable_frame(parent):
 
     return scrollableFrame
 
-def cria_tabela(parent, columns, entries):
+def cria_tabela(parent, columns, entries, stretch = True):
     # Cria a tabela de escuderias.
     table = ttk.Treeview(parent, columns=columns, show="headings")
     for column in columns:
         table.heading(column, text=column)
+        table.column(column, anchor = "center", stretch=stretch)  # Largura fixa de 100px
 
     # Adiciona as escuderias na tabela
     if entries:

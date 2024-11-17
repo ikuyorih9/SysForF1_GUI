@@ -47,7 +47,7 @@ def abreLogin(connection):
     window.bind('<Return>', lambda event: login())
 
     # Adiciona o evento para pressionar Esc
-    window.bind('<Escape>', lambda event: sair())
+    window.bind('<Escape>', lambda event: close_all_windows(window))
 
     fLogin = Frame(window, bg="#2C3E50")
     fLogin.pack(fill="both", expand=True)
