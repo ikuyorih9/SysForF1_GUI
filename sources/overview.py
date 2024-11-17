@@ -57,7 +57,7 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     resultado2 = cursor.fetchall()
 
     # FRAME PARA O CABEÇALHO
-    fHeader = Frame(overviewWindow, bg="white")
+    fHeader = Frame(overviewWindow, bg="#2C3E50")
     fHeader.pack(padx=10, pady=5)
 
     # Adiciona o label para o título.
@@ -182,19 +182,19 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
 
     # Adiciona labels de informações
     cria_label(fInfos, "Usuário:", labelTextSize, labelTextStyle).grid(row=1, column=0, padx=5, pady=5, sticky="w")
-    cria_label(fInfos, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, usuario.login, labelTextSize, labelTextStyle).grid(row=1, column=1, padx=5, pady=5, sticky="e")
 
     cria_label(fInfos, "Nome:", labelTextSize, labelTextStyle).grid(row=2, column=0, padx=5, pady=5, sticky="w")
-    cria_label(fInfos, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, nome, labelTextSize, labelTextStyle).grid(row=2, column=1, padx=5, pady=5, sticky="e")
 
     cria_label(fInfos, "Vitórias:", labelTextSize, labelTextStyle).grid(row=3, column=0, padx=5, pady=5, sticky="w")
-    cria_label(fInfos, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdCorridasGanhas), labelTextSize, labelTextStyle).grid(row=3, column=1, padx=5, pady=5, sticky="e")
 
     cria_label(fInfos, "Pilotos da Escuderia:", labelTextSize, labelTextStyle).grid(row=4, column=0, padx=5, pady=5, sticky="w")
-    cria_label(fInfos, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(qtdPilotos), labelTextSize, labelTextStyle).grid(row=4, column=1, padx=5, pady=5, sticky="e")
 
     cria_label(fInfos, "Atividade:", labelTextSize, labelTextStyle).grid(row=5, column=0, padx=5, pady=5, sticky="w")
-    cria_label(fInfos, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+    cria_label(fInfos, str(primeiroAno) + " - " + str(ultimoAno), labelTextSize, labelTextStyle).grid(row=5, column=1, padx=5, pady=5, sticky="e")
 
     # TABELA DE CORRIDAS GANHAS
     corridasGanhasFrame = Frame(fWindow, bg="#2C3E50")
