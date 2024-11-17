@@ -237,7 +237,7 @@ connection.commit() # Para casos de insert, update ou delete.
 
 ### *Login:*
 
-A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-ser criar telas, labels, botões etc.
+A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-se criar telas, labels, botões etc.
 
 A tela de ***Login*** apresenta um campo de *usuário* e de *senha*, e aguarda o botão de *sign in* para confirmar o acesso. A função executada pelo botão é a `login()`, que busca o login e senha da tabela ***Users*** e compara com o texto dos campos. Se o usuário estiver cadastrado, a próxima tela deve aparecer. Caso a correspondência seja falsa, uma *messagebox* é acionada para o login inválido.
 
@@ -264,3 +264,23 @@ def login():
         
         messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 ```
+
+### *Overview:*
+
+A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um Piloto, uma Escuderia ou um Administrador. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
+
+Para Pilotos, são mostradas informações pessoais, escuderia atual, período de atividade e um resumo de desempenho em corridas.
+
+Para Escuderias, são exibidas informações sobre a escuderia, vitórias, pilotos associados e um resumo de desempenho em corridas.
+
+Para Administradores, são apresentadas estatísticas gerais do sistema, como quantidade de pilotos, escuderias, circuitos e temporadas, além de permitir o cadastro de novos pilotos e escuderias.
+
+### *Relatório:*
+
+A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
+
+Para Pilotos, a tela de relatório ainda não está implementada.
+
+Para Escuderias, são exibidos relatórios sobre os pilotos da escuderia e suas vitórias, além de um resumo dos status das corridas.
+
+Para Administradores, são apresentados relatórios sobre a quantidade de resultados por status e aeroportos brasileiros de médio/grande porte a menos de 100km de uma cidade específica.
