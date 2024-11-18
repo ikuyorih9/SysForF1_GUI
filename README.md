@@ -1,5 +1,3 @@
-# 🏁 Formula 1 DBPG 🏁
-
 ![Formula 1 DBPG capa](./images/thumbnail/Formula1DBPG_thumbnail.jpeg)
 
 <p align="center">
@@ -11,23 +9,28 @@
 
  Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O projeto é proposto para a disciplina Laboratório de Base de Dados (SCC0641).
 
-## 🤓 *Colaboradores:*
+# 🤓 *Colaboradores:*
 - [*Guilherme Castanon Silva Pereira*](https://github.com/GuilhermeCastanon);
 - [*Hugo Hiroyuki Nakamura*](https://github.com/ikuyorih9);
 - [*Isaac Santos Soares*](https://github.com/ISS2718);
 
-## 📑 *Índice*
+# 📑 *Índice*
 
 1. [📅 **Tabelas do sistema**](#-colaboradores)
     - [Usuários](#usu%C3%A1rios)
     - [Logs de usuários](#logs-de-usu%C3%A1rio)
-2. [🌐 **Conexão**](#-conex%C3%A3o)
+2. [🌐 **Conexão com a base de dados**](#-conex%C3%A3o)
 3. [💻 **Telas**](#-telas)
     - [Login](#login)
+    - [Overview]()
+    - [Relatórios]()
+4. [⚙️ **Configurações do sistema**]()
+    - [Layout]()
+    - [Navegação]()
 
-## 📅 *TABELAS DO SISTEMA*
+# 📅 *TABELAS DO SISTEMA*
 
-### *Usuários:*
+## *Usuários:*
 
 Os usuários cadastrados no sistema devem ser salvos em uma tabela *Users*, contando com seu `userid` no sistema, seu `login`, `senha`, `tipo`, que pode ser 'Administrador', 'Escuderia' ou 'Piloto', `idoriginal`, que é o id na tabela original.
 
@@ -175,7 +178,7 @@ CREATE OR REPLACE TRIGGER TR_atualizaEscuderia AFTER DELETE OR INSERT OR UPDATE 
 FOR EACH ROW EXECUTE FUNCTION atualizaEscuderia();
 ```
 
-### *Logs de usuário:*
+## *Logs de usuário:*
 
 Quando um usuário entra no sistema, sua conexão é registrada. Para isso, cria-se uma tabela ***Log_Table***, que armazena o seu `userid` e a `data` da conexão.
 
@@ -197,7 +200,7 @@ def registraLogin(userid):
     connection.commit()
 ```
 
-## 🌐 Conexão com a base de dados
+# 🌐 Conexão com a base de dados
 
 Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
 
@@ -233,9 +236,9 @@ cursor.execute("comando SQL")
 connection.commit() # Para casos de insert, update ou delete.
 ```
 
-## 💻 Telas do sistema
+# 💻 Telas do sistema
 
-### *Login*
+## *Login*
 
 A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-se criar telas, labels, botões etc.
 
@@ -265,7 +268,7 @@ def login():
     messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 ```
 
-### Overview
+## Overview
 
 A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um **Piloto**, uma **Escuderia** ou um **Administrador**. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
 
@@ -320,7 +323,7 @@ GROUP BY Seasons.year
 ORDER BY Seasons.year ASC;
 ```
 
-#### Escuderia
+### Escuderia
 
 Apresenta informações para um usuário **Construtor**, como:
 
@@ -328,7 +331,7 @@ Apresenta informações para um usuário **Construtor**, como:
 * **Quantidade de pilotos diferentes que já correram pela escuderia;**
 * **Primeiro e último ano em que há dados da escuderia na base.**
 
-#### Piloto
+### Piloto
 
 Apresenta informações para um usuário **Piloto**, como:
 
@@ -340,9 +343,9 @@ Apresenta informações para um usuário **Piloto**, como:
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
 
-## ⚙️ Configurações do sistema
+# ⚙️ Configurações do sistema
 
-### Layout
+## Layout
 
 Os layouts foram estabelecidos em códigos padrões, como uma interface entre o Tkinter e o usuário. Esses códigos são:
 
@@ -428,7 +431,7 @@ def cria_scrollable_frame(parent):
     return scrollableFrame
 ```
 
-### Navegação
+## Navegação
 
 A navegação entre telas foi feita através de uma pilha `Navigation`, que empilha as telas conforme elas são chamadas e as desempilha conforme são fechadas.
 
