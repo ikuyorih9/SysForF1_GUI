@@ -89,14 +89,14 @@ def abreRelatorioEscuderia(connection, window, usuario):
         FROM 
             DRIVER
         LEFT JOIN 
-            RESULTS ON DRIVER.driverid = RESULTS.driverid AND RESULTS.constructorid = %s
+            RESULTS ON DRIVER.driverid = RESULTS.driverid
         WHERE 
-            DRIVER.driverid IN (SELECT DISTINCT driverid FROM RESULTS WHERE constructorid = %s)
+            RESULTS.constructorid = %s
         GROUP BY 
             DRIVER.forename, DRIVER.surname
         ORDER BY 
             vitorias DESC;
-        """, (usuario.idoriginal, usuario.idoriginal,))
+        """, (usuario.idoriginal,))
     tabelaPilotosVitorias = cursor.fetchall()
 
     # Seleciona todos os Status e conta as ocorrencias de cada um.

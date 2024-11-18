@@ -31,7 +31,7 @@
 
 Os usuários cadastrados no sistema devem ser salvos em uma tabela *Users*, contando com seu `userid` no sistema, seu `login`, `senha`, `tipo`, que pode ser 'Administrador', 'Escuderia' ou 'Piloto', `idoriginal`, que é o id na tabela original.
 
-```
+```sql
 CREATE TABLE Users (
     userid INTEGER,
     login VARCHAR(300),
@@ -45,7 +45,7 @@ CREATE TABLE Users (
 
 A tabela é inicialmente preenchida com todos os pilotos e escuderias registrados, junto com um *admin*. Os `userid` são selecionados conforme ordem de carga na tabela. O ``login`` dos usuários são preenchidos conforme seu *nome de referencia*, concatenado com seu tipo ('_c' ou '_d'). A senha é seu próprio nome de referência, que é hashificada e salva na base. A função que realiza a carga na base é `CadastrarUsuarios()`.
 
-```
+```sql
 CREATE OR REPLACE FUNCTION CadastrarUsuarios() RETURNS VOID AS $$
 DECLARE
     i INTEGER := 1;
@@ -77,7 +77,7 @@ $$ LANGUAGE plpgsql;
 
 Mudanças que são realizadas nas tabelas *Driver* e *Constructor* devem refletir na tabela de *Users*, isto é, o login e senha devem ser atualizados. Isso pode ser feito através de ***Triggers***, para *Delete*, *Insert* e *Update*. Para atualizar a tabela ***Driver***, o trigger `TR_atualizaPiloto` executa a função `atualizaPiloto()`.
 
-```
+```sql
 CREATE OR REPLACE FUNCTION atualizaPiloto() RETURNS TRIGGER AS $$
 DECLARE
     i INTEGER := 0;
@@ -127,7 +127,7 @@ FOR EACH ROW EXECUTE FUNCTION atualizaPiloto();
 
 Para a tabela *Constructors*, o trigger `TR_atualizaEscuderia` executa a função `atualizaEscuderia()`.
 
-```
+```sql
 CREATE OR REPLACE FUNCTION atualizaEscuderia() RETURNS TRIGGER AS $$
 DECLARE
     i INTEGER := 0;
@@ -179,7 +179,7 @@ FOR EACH ROW EXECUTE FUNCTION atualizaEscuderia();
 
 Quando um usuário entra no sistema, sua conexão é registrada. Para isso, cria-se uma tabela ***Log_Table***, que armazena o seu `userid` e a `data` da conexão.
 
-```
+```sql
 CREATE TABLE IF NOT EXISTS Log_Table(
     userid INTEGER,
     data TIMESTAMP,
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS Log_Table(
 
 Quando um usuário faz o login no sistema, a função `registraLogin(userid)` é executada. Ela obtém a data/hora atual e realiza a inserção das informações necessárias na tabela. 
 
-```
+```python
 def registraLogin(userid):
     data = datetime.now()
     print(data)
@@ -201,7 +201,7 @@ def registraLogin(userid):
 
 Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
 
-```
+```ini
 [postgresql]
 dbname = Grupo2
 user = Grupo2
@@ -212,7 +212,7 @@ port = 5432
 
 A conexão, portanto, é feita abrindo esse arquivo e utilizando a função `psycopg2.connect()`.
 
-```
+```python
 config = configparser.ConfigParser()
 config.read('database.ini')
 
@@ -227,7 +227,7 @@ connection = psycopg2.connect(
 
 Os comandos SQL são executados através de um cursor, que executa a função `execute()`.
 
-```
+```python
 cursor = connection.cursor()
 cursor.execute("comando SQL")
 connection.commit() # Para casos de insert, update ou delete.
@@ -241,7 +241,7 @@ A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com e
 
 A tela de ***Login*** apresenta um campo de *usuário* e de *senha*, e aguarda o botão de *sign in* para confirmar o acesso. A função executada pelo botão é a `login()`, que busca o login e senha da tabela USERS e compara com o texto dos campos. Se o usuário estiver cadastrado, a próxima tela deve aparecer. Caso a correspondência seja falsa, uma *messagebox* é acionada para o login inválido. Se o *Sign up* acontecer, as informações de usuário são salvos numa tabela de LOGS.
 
-```
+```python
 def login():
     usuario = lNome.get()
     senha = hashlib.md5(lSenha.get().encode()).hexdigest()
@@ -275,17 +275,17 @@ Apresenta informações para um usuário **Administrador**:
 
 * **Quantidade de pilotos cadastrados;**
 
-```
+```sql
 SELECT COUNT(DISTINCT driverid)
 FROM Driver;
 ```
 * **Quantidade de escuderias cadastradas**
-```
+```sql
 SELECT COUNT(DISTINCT constructorid)
 FROM Constructors;
 ```
 * **Quantidade de pilotos por escuderia;**
-```
+```sql
 SELECT Constructors.constructorid, Constructors.name, COUNT(DISTINCT driverid)
 FROM RESULTS, RACES, Constructors
 WHERE Races.raceid = Results.raceid AND
@@ -301,19 +301,19 @@ GROUP BY (Constructors.constructorid, Constructors.name)
 ORDER BY constructorid;
 ```
 * **Quantidade de circuitos cadastrados;**
-```
+```sql
 SELECT COUNT(DISTINCT raceid)
 FROM RACES;
 ```
 * **Quantidade de corridas por circuito;**
-```
+```sql
 SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
 FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
 GROUP BY (Circuits.circuitid, Circuits.name)
 ORDER BY Circuits.circuitid
 ```
 * **Quantidade de corridas por temporada.**
-```
+```sql
 SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
 FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
 GROUP BY Seasons.year
@@ -347,19 +347,19 @@ A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados
 Os layouts foram estabelecidos em códigos padrões, como uma interface entre o Tkinter e o usuário. Esses códigos são:
 
 * **Criar uma Label:**
-```
+```python
 def cria_label(parent, text, fontsize=12, fontstyle="normal"):
     return Label(parent, text=text, compound="right", bg="#2C3E50", fg="#ECF0F1", font=("Montserrat", fontsize, fontstyle))
 ```
 
 * **Criar um Button:**
-```
+```python
 def cria_botao(parent, text, fontsize=12, command = lambda:print("botão")):
     return  Button(parent, text=text, command=command, bg="#3498DB", fg="white", font=("Montserrat", fontsize), relief=GROOVE)
 ```
 
 * **Criar uma Entry:**
-```
+```python
 def cria_entry(parent, backtext, fontsize=12, width=None, show=None):
     def on_entry_click(event, entry, placeholder):
         if entry.get() == placeholder:
@@ -380,7 +380,7 @@ def cria_entry(parent, backtext, fontsize=12, width=None, show=None):
 ```
 
 * **Cria uma TreeView (tabela)**:
-```
+```python
 def cria_tabela(parent, columns, entries, stretch = True):
     # Cria a tabela de escuderias.
     table = ttk.Treeview(parent, columns=columns, show="headings")
@@ -397,7 +397,7 @@ def cria_tabela(parent, columns, entries, stretch = True):
 ```
 
 * **Cria um Frame Scrollable**:
-```
+```python
 def cria_scrollable_frame(parent):
     # Evento para atualizar o tamanho do canvas quando os widgets são adicionados.
     def update_scroll_region(event):
@@ -434,7 +434,7 @@ A navegação entre telas foi feita através de uma pilha `Navigation`, que empi
 
 Para voltar uma tela, executa-se a função `go_back(current_window)`, que recebe a janela atual a ser fechada.
 
-```
+```python
 def go_back(current_window):
     current_window.destroy()
     if Navigation:
@@ -445,7 +445,7 @@ def go_back(current_window):
 
 Para avançar uma tela, executa-se a função `go_forward(current_window, function_next_window)`, que adiciona a `current_window` na pilha e executa a função `function_next_window` para abrir a nova tela.
 
-```
+```python
 def go_forward(current_window, function_next_window):
     push(current_window)
     if current_window.winfo_viewable():
@@ -456,7 +456,7 @@ def go_forward(current_window, function_next_window):
 
 Para fechar todas as telas, utiliza-se `close_all_windows(current_window)`, que fecha a janela principal `current_window` e todas as outras que estão na pilha de navegação.
 
-```
+```python
 def close_all_windows(current_window):
     current_window.destroy()
     while Navigation:

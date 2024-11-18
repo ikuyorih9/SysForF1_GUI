@@ -284,4 +284,9 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM AtividadePiloto(1);
 SELECT AtividadePiloto(1);
 
+-- indice para relatório da escuderia
+DROP INDEX IF EXISTS idx_results_driver_constructor;
 
+
+CREATE INDEX IF NOT EXISTS idx_results_driver_constructor
+ON RESULTS USING HASH  (driverid, constructorid, rank);
