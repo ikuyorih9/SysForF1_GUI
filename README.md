@@ -19,7 +19,7 @@
 1. [📅 **Tabelas do sistema**](#-colaboradores)
     - [Usuários](#usu%C3%A1rios)
     - [Logs de usuários](#logs-de-usu%C3%A1rio)
-2. [🌐 **Conexão com a base de dados**](#conexão-com-a-base-de-dados)
+2. [🌐 **Conexão com a base de dados**](#-conexão-com-a-base-de-dados)
 3. [💻 **Telas do sistema**](#-telas-do-sistema)
     - [Login](#login)
     - [Overview](#overview)
@@ -30,7 +30,7 @@
 
 # 📅 *TABELAS DO SISTEMA*
 
-## *Usuários:*
+## *Usuários*
 
 Os usuários cadastrados no sistema devem ser salvos em uma tabela *Users*, contando com seu `userid` no sistema, seu `login`, `senha`, `tipo`, que pode ser 'Administrador', 'Escuderia' ou 'Piloto', `idoriginal`, que é o id na tabela original.
 
@@ -178,7 +178,7 @@ CREATE OR REPLACE TRIGGER TR_atualizaEscuderia AFTER DELETE OR INSERT OR UPDATE 
 FOR EACH ROW EXECUTE FUNCTION atualizaEscuderia();
 ```
 
-## *Logs de usuário:*
+## *Logs de usuário*
 
 Quando um usuário entra no sistema, sua conexão é registrada. Para isso, cria-se uma tabela ***Log_Table***, que armazena o seu `userid` e a `data` da conexão.
 
