@@ -329,15 +329,55 @@ ORDER BY Seasons.year ASC;
 Apresenta informações para um usuário **Construtor**, como:
 
 * **Quantidade e vitórias da escuderia;**
+```sql
+CREATE OR REPLACE FUNCTION get_wins_by_constructor(constructorid INT)
+RETURNS INT AS $$
+DECLARE
+    win_count INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO win_count
+    FROM RESULTS r
+    WHERE r.constructorid = get_wins_by_constructor.constructorid AND r.rank = 1;
+    
+    RETURN win_count;
+END;
+$$ LANGUAGE plpgsql;
+```
 * **Quantidade de pilotos diferentes que já correram pela escuderia;**
+```sql
+CREATE OR REPLACE FUNCTION get_driver_count_by_constructor(p_constructorid INT)
+RETURNS TABLE(constructorid INT, driver_count BIGINT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT r.constructorid, COUNT(DISTINCT r.driverid)
+    FROM RESULTS r
+    WHERE r.constructorid = p_constructorid
+    GROUP BY r.constructorid
+    ORDER BY r.constructorid;
+END;
+$$ LANGUAGE plpgsql;
+```
 * **Primeiro e último ano em que há dados da escuderia na base.**
+```sql
+CREATE OR REPLACE FUNCTION get_constructor_year_range(p_constructorid INT)
+RETURNS TABLE(min_year INT, max_year INT) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT MIN(RACES.year), MAX(RACES.year)
+    FROM RESULTS
+    JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.constructorid = p_constructorid;
+END;
+$$ LANGUAGE plpgsql;
+```
 
 ### Piloto
 
 Apresenta informações para um usuário **Piloto**, como:
 
 * **Primeiro e último ano em que há dados do piloto na base;**
-```
+```sql
 CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE 
 (PrimeiroAno INTEGER, 
 UltimoAno INTEGER) AS $$
@@ -363,7 +403,7 @@ $$ LANGUAGE plpgsql;
 ```
 
 * **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos e vitórias;**
-```
+```sql
 CREATE OR REPLACE FUNCTION InfoCompeticoes(id INTEGER)
 RETURNS TABLE (
     ano INTEGER,
@@ -401,7 +441,7 @@ A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados
 
 ### Administrador:
 * **RELATÓRIO 1**: indica a quantidade de resultados por cada status, apresentando o nome do status e sua contagem.
-```
+```sql
 SELECT status, COUNT(resultid)
 FROM Results LEFT JOIN Status ON Results.statusid = Status.statusid
 GROUP BY status
@@ -409,7 +449,7 @@ ORDER BY status;
 ```
 
 * **RELATÓRIO 2**: Receber o nome de uma cidade e, para cada cidade que tenha esse nome, apresenta todos os aeroportos brasileiros que estejam a, no mÁximo, 100 Km da respectiva cidades e que sejam dos tipos 'medium airport' ou 'large airport'.
-```
+```sql
 SELECT city, iatacode, AIRPORTS.name, Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)), type
 FROM AIRPORTS RIGHT JOIN GEOCITIES15K ON AIRPORTS.city = GEOCITIES15K.name
 WHERE (type = 'medium_airport' OR type = 'large_airport') AND
@@ -422,7 +462,7 @@ WHERE (type = 'medium_airport' OR type = 'large_airport') AND
 
 * **Relatório 3**: lista os pilotos da escuderia, bem como a quantidade de vezes em que cada um deles alcançou a primeira posição em uma corrida.
 
-```
+```sql
 SELECT DRIVER.forename || ' ' || DRIVER.surname AS piloto, COUNT(CASE WHEN RESULTS.rank = 1 THEN 1 ELSE NULL END) AS vitorias
 FROM DRIVER LEFT JOIN RESULTS ON DRIVER.driverid = RESULTS.driverid
 WHERE RESULTS.constructorid = %s
@@ -432,7 +472,7 @@ ORDER BY vitorias DESC;
 
 * **Relatório 4**: lista a quantidade de resultados por cada status, apresentando o status e sua contagem, limitadas ao escopo de sua escuderia.
 
-```
+```sql
 SELECT STATUS.status, COUNT(RESULTS.statusid)
 FROM RESULTS JOIN STATUS ON RESULTS.statusid = STATUS.statusid
 WHERE RESULTS.constructorid = %s
@@ -443,7 +483,7 @@ ORDER BY quantidade DESC;
 ### Piloto:
 
 * **Relatório 5**: consultar a quantidade de vitórias obtidas, apresentando o ano e a corrida onde cada vitória foi alcançada.
-```
+```sql
 SELECT Races.year, Races.name AS corrida, COUNT(*) AS vitorias
 FROM Results
 JOIN Races ON Results.raceid = Races.raceid
@@ -453,7 +493,7 @@ ORDER BY Races.year, Races.name;
 ```
 
 * **Relatório 6**: lista a quantidade de resultados por cada status, apresentando o status e sua contagem, limitada ao escopo do piloto logado.
-```
+```sql
 SELECT Status.status AS descricao_status, COUNT(*) AS quantidade
 FROM Results
 JOIN Status ON Results.statusid = Status.statusid
