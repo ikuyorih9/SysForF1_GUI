@@ -1,22 +1,22 @@
-# SysF1_PostgreSQL
+# 🏁 Formula 1 DBPG 🏁
+
+![Formula 1 DBPG capa](./images/thumbnail/Formula1DBPG_thumbnail.jpeg)
 
 <p align="center">
     <img src="https://img.shields.io/badge/Language-Python_3.12.7-gray?style=flat&labelColor=blue&link=https%3A%2F%2Fwww.postgresql.org%2F"/>
     <img src="https://img.shields.io/badge/Database-PostgreSQL-gray?style=flat&labelColor=yellow&link=https%3A%2F%2Fwww.postgresql.org%2F"/>
     <img src="https://img.shields.io/badge/GUI_Package-Tkinter-gray?style=flat&labelColor=purple&link=https%3A%2F%2Fdocs.python.org%2F3%2Flibrary%2Ftkinter.html"/>
     <img alt="Static Badge" src="https://img.shields.io/badge/SQL_Package-Psycopg2-gray?style=flat&labelColor=purple&link=https%3A%2F%2Fimg.shields.io%2Fbadge%2FLanguage-Python_3.12.7-gray%3Fstyle%3Dflat%26labelColor%3Dblue%26link%3Dhttps%253A%252F%252Fwww.postgresql.org%252F">
-
 </p>
 
+ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O projeto é proposto para a disciplina Laboratório de Base de Dados (SCC0641).
 
-Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O projeto é proposto para a disciplina Laboratório de Base de Dados (SCC0641).
-
-# 🤓 *Colaboradores:*
+## 🤓 *Colaboradores:*
 - [*Guilherme Castanon Silva Pereira*](https://github.com/GuilhermeCastanon);
 - [*Hugo Hiroyuki Nakamura*](https://github.com/ikuyorih9);
 - [*Isaac Santos Soares*](https://github.com/ISS2718);
 
-# 📑 *Índice*
+## 📑 *Índice*
 
 1. [📅 **Tabelas do sistema**](#-colaboradores)
     - [Usuários](#usu%C3%A1rios)
@@ -25,7 +25,7 @@ Sistema GUI em PostgreSQL para manipulação na base de dados de Fórmula 1. O p
 3. [💻 **Telas**](#-telas)
     - [Login](#login)
 
-# 📅 *TABELAS DO SISTEMA*
+## 📅 *TABELAS DO SISTEMA*
 
 ### *Usuários:*
 
@@ -197,7 +197,7 @@ def registraLogin(userid):
     connection.commit()
 ```
 
-# 🌐 Conexão com a base de dados
+## 🌐 Conexão com a base de dados
 
 Os comandos SQL são realizados através do pacote **Psycopg2**. Um arquivo `database.ini` contém as informações da base de dados a se conectar.
 
@@ -233,9 +233,9 @@ cursor.execute("comando SQL")
 connection.commit() # Para casos de insert, update ou delete.
 ```
 
-# 💻 Telas do sistema
+## 💻 Telas do sistema
 
-## *Login*
+### *Login*
 
 A interface gráfica é feita em *Python*, através do pacote **Tkinter**. Com ela, pode-se criar telas, labels, botões etc.
 
@@ -265,11 +265,11 @@ def login():
     messagebox.showerror("Login inválido", "Usuário ou senha incorretos.")
 ```
 
-## Overview
+### Overview
 
 A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um **Piloto**, uma **Escuderia** ou um **Administrador**. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
 
-### Administrador
+#### Administrador
 
 Apresenta informações para um usuário **Administrador**:
 
@@ -320,7 +320,7 @@ GROUP BY Seasons.year
 ORDER BY Seasons.year ASC;
 ```
 
-### Escuderia
+#### Escuderia
 
 Apresenta informações para um usuário **Construtor**, como:
 
@@ -328,7 +328,7 @@ Apresenta informações para um usuário **Construtor**, como:
 * **Quantidade de pilotos diferentes que já correram pela escuderia;**
 * **Primeiro e último ano em que há dados da escuderia na base.**
 
-### Piloto
+#### Piloto
 
 Apresenta informações para um usuário **Piloto**, como:
 
@@ -336,13 +336,13 @@ Apresenta informações para um usuário **Piloto**, como:
 * **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos;**
 * **Para cada ano de competição e cada circuito, a quantidade de vitórias.**
 
-## Relatórios
+### Relatórios
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
 
-# ⚙️ Configurações do sistema
+## ⚙️ Configurações do sistema
 
-## Layout
+### Layout
 
 Os layouts foram estabelecidos em códigos padrões, como uma interface entre o Tkinter e o usuário. Esses códigos são:
 
@@ -368,7 +368,7 @@ def cria_entry(parent, backtext, fontsize=12, width=None, show=None):
             entry.config(fg = 'black')
 
     def on_focusout(event, entry, placeholder):
-        if entry.get() == '':
+        if entry.get() == ''):
             entry.insert(0, placeholder)
             entry.config(fg = 'grey')
 
@@ -428,7 +428,7 @@ def cria_scrollable_frame(parent):
     return scrollableFrame
 ```
 
-## Navegação
+### Navegação
 
 A navegação entre telas foi feita através de uma pilha `Navigation`, que empilha as telas conforme elas são chamadas e as desempilha conforme são fechadas.
 
