@@ -30,22 +30,15 @@ def abreOverviewPiloto(connection, overviewWindow, usuario):
     resultado = cursor.fetchone()
     escuderia, ano = resultado
 
+    # CHAMADA FUNCAO PL-PGSQL PARA PRIMEIRA CONSULTA DO OVERVIEW DE PILOTO
     cursor.execute("""
         SELECT * FROM AtividadePiloto(%s);
     """, (usuario.idoriginal,))
     primeiroano, ultimoano = cursor.fetchone()
 
+    #CHAMADA FUNCAO PL-PGSQL PARA SEGUNDA CONSULTA DO OVERVIEW DE PILOTO
     cursor.execute("""
-        SELECT Races.year, Circuits.name AS circuito, 
-                    SUM(Results.points) AS total_pontos, 
-                    SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END) AS total_vitorias
-                FROM Results
-                JOIN Races ON Results.raceid = Races.raceid
-                JOIN Circuits ON Races.circuitid = Circuits.circuitid
-                WHERE Results.driverid = 1
-                GROUP BY Races.year, Circuits.name
-                ORDER BY Races.year, Circuits.name;
-
+        SELECT * FROM InfoCompeticoes(%s)
     """, (usuario.idoriginal,))
         
     resultado2 = cursor.fetchall()
@@ -294,16 +287,16 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
         qtdCircuitos = resultado[0]
 
     cursor.execute("""
-        SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
-        FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
-        GROUP BY (Circuits.circuitid, Circuits.name)
-        ORDER BY Circuits.circuitid
+        SELECT Circuits.name, COUNT(DISTINCT raceid)
+        FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+        GROUP BY (Circuits.name)
+        ORDER BY Circuits.name
     """)
     circuitos = cursor.fetchall()
 
     cursor.execute("""
         SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
-        FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
+        FROM Races JOIN Seasons ON Races.year = Seasons.year
         GROUP BY Seasons.year
         ORDER BY Seasons.year ASC;
     """)
@@ -377,7 +370,7 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
 
     if circuitos:
         for tupla in circuitos:
-            id, nome, qtd = tupla
+            nome, qtd = tupla
             circuitosTabela.insert("", "end", values=(nome, qtd))
 
     circuitosTabela.pack(padx = 10, pady = 5, fill="x")

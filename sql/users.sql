@@ -222,7 +222,7 @@ FROM Results LEFT JOIN Status ON Results.statusid = Status.statusid
 GROUP BY status
 ORDER BY status;
 
-DROP INDEX IF EXISTS idx_country;
+DROP INDEX IF EXISTS idx_piloto;
 DROP INDEX IF EXISTS idx_cidade;
 DROP INDEX IF EXISTS idx_type;
 DROP INDEX IF EXISTS idx_airport_city;
@@ -260,7 +260,9 @@ FROM Results
     JOIN Races ON Results.raceid = Races.raceid
 WHERE Results.driverid = 1;
 
-CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE (PrimeiroAno INTEGER, UltimoAno INTEGER)AS $$
+CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE 
+(PrimeiroAno INTEGER, 
+UltimoAno INTEGER) AS $$
 DECLARE
     PrimeiroAno INTEGER;
     UltimoAno INTEGER;
@@ -281,6 +283,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DROP FUNCTION IF EXISTS InfoCompeticoes(INTEGER);
+CREATE OR REPLACE FUNCTION InfoCompeticoes(id INTEGER)
+RETURNS TABLE (
+    ano INTEGER,
+    circuito TEXT,
+    total_pontos NUMERIC,
+    total_vitorias INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        Races.year AS ano,
+        Circuits.name AS circuito,
+        SUM(Results.points)::NUMERIC AS total_pontos, 
+        SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END)::INTEGER AS total_vitorias
+    FROM 
+        Results
+    JOIN 
+        Races ON Results.raceid = Races.raceid
+    JOIN 
+        Circuits ON Races.circuitid = Circuits.circuitid
+    WHERE 
+        Results.driverid = id
+    GROUP BY 
+        Races.year, Circuits.name
+    ORDER BY 
+        Races.year, Circuits.name;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT * FROM InfoCompeticoes(1);
 SELECT * FROM AtividadePiloto(1);
 SELECT AtividadePiloto(1);
 
@@ -289,4 +324,33 @@ DROP INDEX IF EXISTS idx_results_driver_constructor;
 
 
 CREATE INDEX IF NOT EXISTS idx_results_driver_constructor
-ON RESULTS USING HASH  (driverid, constructorid, rank);
+ON RESULTS USING HASH  (driverid, constructorid, rank);SELECT RACES.name, DRIVER.forename || ' ' || DRIVER.surname
+        FROM RESULTS
+        JOIN RACES ON RESULTS.raceid = RACES.raceid
+        JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
+        WHERE RESULTS.constructorid = 131 AND RESULTS.rank = 1
+ORDER BY RESULTS.raceid;
+
+
+DROP INDEX IF EXISTS idx_escuderia;
+
+
+CREATE INDEX idx_escuderia ON Constructors USING HASH (constructorid);
+
+CREATE OR REPLACE FUNCTION QuantidadePilotosEscuderia(id_escuderia INTEGER)
+RETURNS INTEGER AS $$
+DECLARE
+    qtd_pilotos INTEGER; -- Variável para armazenar a quantidade de pilotos únicos
+BEGIN
+    -- Realiza a contagem de pilotos distintos
+    SELECT COUNT(DISTINCT driverid)
+    INTO qtd_pilotos
+    FROM Results
+    WHERE constructorid = id_escuderia;
+
+    -- Retorna o valor da quantidade de pilotos
+    RETURN qtd_pilotos;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT QuantidadePilotosEscuderia(131);
