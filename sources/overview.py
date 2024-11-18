@@ -108,47 +108,29 @@ def abreOverviewEscuderia(connection, overviewWindow, usuario):
     
     # Query para contar a quantidade de corridas ganhas por uma escuderia
     cursor.execute("""
-        SELECT COUNT(*)
-        FROM RESULTS
-        WHERE constructorid = %s AND rank = 1;
+        SELECT get_wins_by_constructor(%s);
     """, (usuario.idoriginal,))
     qtdCorridasGanhas = cursor.fetchone()[0]
 
     # Query para obter a lista das corridas ganhas com seus respectivos pilotos
     cursor.execute("""
-        SELECT RACES.name, DRIVER.forename || ' ' || DRIVER.surname
-        FROM RESULTS
-        JOIN RACES ON RESULTS.raceid = RACES.raceid
-        JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
-        WHERE RESULTS.constructorid = %s AND RESULTS.rank = 1
-        ORDER BY RESULTS.raceid;
+        SELECT * FROM get_race_winners(%s);
     """, (usuario.idoriginal,))
     tabelaCorridasGanhas = cursor.fetchall()
 
     cursor.execute("""
-        SELECT constructorid, COUNT(DISTINCT driverid)
-        FROM RESULTS
-        WHERE constructorid = %s
-        GROUP BY constructorid
-        ORDER BY constructorid;
+        SELECT get_driver_count_by_constructor(%s)
     """, (usuario.idoriginal,))
-    qtdPilotos = cursor.fetchone()[1]
+    qtdPilotos = cursor.fetchone()[0]
 
     cursor.execute("""
-        SELECT DISTINCT DRIVER.forename || ' ' || DRIVER.surname
-        FROM RESULTS
-		JOIN DRIVER ON RESULTS.driverid = DRIVER.driverid
-        WHERE constructorid = %s
-		ORDER BY DRIVER.forename || ' ' || DRIVER.surname;
+        SELECT * FROM get_distinct_drivers_by_constructor(%s);
     """, (usuario.idoriginal,))
     tabelaPilotos = cursor.fetchall()
 
 
     cursor.execute("""
-        SELECT MIN(year), MAX(year)
-        FROM RESULTS
-        JOIN RACES ON RESULTS.raceid = RACES.raceid
-        WHERE RESULTS.constructorid = %s;
+        SELECT * FROM get_constructor_year_range(%s);
     """, (usuario.idoriginal,))
     primeiroAno, ultimoAno = cursor.fetchone()
 
