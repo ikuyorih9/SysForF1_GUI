@@ -287,10 +287,11 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
         qtdCircuitos = resultado[0]
 
     cursor.execute("""
-        SELECT Circuits.name, COUNT(DISTINCT raceid)
+        SELECT Circuits.name, COUNT(DISTINCT RACES.raceid), MIN(RESULTS.laps), MAX(RESULTS.laps)
         FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+            JOIN RESULTS ON (RACES.raceid = RESULTS.raceid)
         GROUP BY (Circuits.name)
-        ORDER BY Circuits.name
+        ORDER BY Circuits.name;
     """)
     circuitos = cursor.fetchall()
 

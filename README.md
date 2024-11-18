@@ -308,12 +308,13 @@ ORDER BY constructorid;
 SELECT COUNT(DISTINCT raceid)
 FROM RACES;
 ```
-* **Quantidade de corridas por circuito;**
+* **Quantidade de corridas por circuito, com mínimo e máximo de voltas;**
 ```sql
-SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
-FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
-GROUP BY (Circuits.circuitid, Circuits.name)
-ORDER BY Circuits.circuitid
+SELECT Circuits.name, COUNT(DISTINCT RACES.raceid), MIN(RESULTS.laps), MAX(RESULTS.laps)
+FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+    JOIN RESULTS ON (RACES.raceid = RESULTS.raceid)
+GROUP BY (Circuits.name)
+ORDER BY Circuits.name;
 ```
 * **Quantidade de corridas por temporada.**
 ```sql
@@ -397,6 +398,8 @@ $$ LANGUAGE plpgsql;
 ## Relatórios
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
+
+
 
 # ⚙️ Configurações do sistema
 
