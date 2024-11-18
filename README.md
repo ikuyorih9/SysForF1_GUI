@@ -308,12 +308,13 @@ ORDER BY constructorid;
 SELECT COUNT(DISTINCT raceid)
 FROM RACES;
 ```
-* **Quantidade de corridas por circuito;**
+* **Quantidade de corridas por circuito, com mínimo e máximo de voltas;**
 ```sql
-SELECT Circuits.circuitid, Circuits.name, COUNT(DISTINCT raceid)
-FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
-GROUP BY (Circuits.circuitid, Circuits.name)
-ORDER BY Circuits.circuitid
+SELECT Circuits.name, COUNT(DISTINCT RACES.raceid), MIN(RESULTS.laps), MAX(RESULTS.laps)
+FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+    JOIN RESULTS ON (RACES.raceid = RESULTS.raceid)
+GROUP BY (Circuits.name)
+ORDER BY Circuits.name;
 ```
 * **Quantidade de corridas por temporada.**
 ```sql
@@ -336,12 +337,131 @@ Apresenta informações para um usuário **Construtor**, como:
 Apresenta informações para um usuário **Piloto**, como:
 
 * **Primeiro e último ano em que há dados do piloto na base;**
-* **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos;**
-* **Para cada ano de competição e cada circuito, a quantidade de vitórias.**
+```
+CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE 
+(PrimeiroAno INTEGER, 
+UltimoAno INTEGER) AS $$
+DECLARE
+    PrimeiroAno INTEGER;
+    UltimoAno INTEGER;
+BEGIN
+    SELECT DISTINCT year INTO PrimeiroAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year ASC
+    LIMIT 1;
+
+SELECT DISTINCT year INTO UltimoAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year DESC
+    LIMIT 1;
+
+    RETURN QUERY SELECT PrimeiroAno, UltimoAno;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+* **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos e vitórias;**
+```
+CREATE OR REPLACE FUNCTION InfoCompeticoes(id INTEGER)
+RETURNS TABLE (
+    ano INTEGER,
+    circuito TEXT,
+    total_pontos NUMERIC,
+    total_vitorias INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        Races.year AS ano,
+        Circuits.name AS circuito,
+        SUM(Results.points)::NUMERIC AS total_pontos, 
+        SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END)::INTEGER AS total_vitorias
+    FROM 
+        Results
+    JOIN 
+        Races ON Results.raceid = Races.raceid
+    JOIN 
+        Circuits ON Races.circuitid = Circuits.circuitid
+    WHERE 
+        Results.driverid = id
+    GROUP BY 
+        Races.year, Circuits.name
+    ORDER BY 
+        Races.year, Circuits.name;
+END;
+$$ LANGUAGE plpgsql;
+
+```
 
 ## Relatórios
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
+
+### Administrador:
+* **RELATÓRIO 1**: indica a quantidade de resultados por cada status, apresentando o nome do status e sua contagem.
+```
+SELECT status, COUNT(resultid)
+FROM Results LEFT JOIN Status ON Results.statusid = Status.statusid
+GROUP BY status
+ORDER BY status;
+```
+
+* **RELATÓRIO 2**: Receber o nome de uma cidade e, para cada cidade que tenha esse nome, apresenta todos os aeroportos brasileiros que estejam a, no mÁximo, 100 Km da respectiva cidades e que sejam dos tipos 'medium airport' ou 'large airport'.
+```
+SELECT city, iatacode, AIRPORTS.name, Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)), type
+FROM AIRPORTS RIGHT JOIN GEOCITIES15K ON AIRPORTS.city = GEOCITIES15K.name
+WHERE (type = 'medium_airport' OR type = 'large_airport') AND
+       GEOCITIES15K.country = 'BR' AND
+       Earth_Distance(LL_to_Earth(AIRPORTS.latdeg , AIRPORTS.longdeg), LL_to_Earth(GEOCITIES15K.lat, GEOCITIES15K.long)) <= 100000 AND
+       GEOCITIES15K.name = %s;
+```
+
+### Escuderia:
+
+* **Relatório 3**: lista os pilotos da escuderia, bem como a quantidade de vezes em que cada um deles alcançou a primeira posição em uma corrida.
+
+```
+SELECT DRIVER.forename || ' ' || DRIVER.surname AS piloto, COUNT(CASE WHEN RESULTS.rank = 1 THEN 1 ELSE NULL END) AS vitorias
+FROM DRIVER LEFT JOIN RESULTS ON DRIVER.driverid = RESULTS.driverid
+WHERE RESULTS.constructorid = %s
+GROUP BY DRIVER.forename, DRIVER.surname
+ORDER BY vitorias DESC;
+```
+
+* **Relatório 4**: lista a quantidade de resultados por cada status, apresentando o status e sua contagem, limitadas ao escopo de sua escuderia.
+
+```
+SELECT STATUS.status, COUNT(RESULTS.statusid)
+FROM RESULTS JOIN STATUS ON RESULTS.statusid = STATUS.statusid
+WHERE RESULTS.constructorid = %s
+GROUP BY STATUS.status
+ORDER BY quantidade DESC;
+```
+
+### Piloto:
+
+* **Relatório 5**: consultar a quantidade de vitórias obtidas, apresentando o ano e a corrida onde cada vitória foi alcançada.
+```
+SELECT Races.year, Races.name AS corrida, COUNT(*) AS vitorias
+FROM Results
+JOIN Races ON Results.raceid = Races.raceid
+WHERE Results.driverid = %s AND Results.position = 1
+GROUP BY ROLLUP (Races.year, Races.name)
+ORDER BY Races.year, Races.name;
+```
+
+* **Relatório 6**: lista a quantidade de resultados por cada status, apresentando o status e sua contagem, limitada ao escopo do piloto logado.
+```
+SELECT Status.status AS descricao_status, COUNT(*) AS quantidade
+FROM Results
+JOIN Status ON Results.statusid = Status.statusid
+WHERE Results.driverid = %s
+GROUP BY Status.status
+ORDER BY quantidade DESC;
+```
+
 
 # ⚙️ Configurações do sistema
 

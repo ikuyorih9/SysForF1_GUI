@@ -269,10 +269,11 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
         qtdCircuitos = resultado[0]
 
     cursor.execute("""
-        SELECT Circuits.name, COUNT(DISTINCT raceid)
+        SELECT Circuits.name, COUNT(DISTINCT RACES.raceid), MIN(RESULTS.laps), MAX(RESULTS.laps), AVG(RESULTS.laps)
         FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+            JOIN RESULTS ON (RACES.raceid = RESULTS.raceid)
         GROUP BY (Circuits.name)
-        ORDER BY Circuits.name
+        ORDER BY Circuits.name;
     """)
     circuitos = cursor.fetchall()
 
@@ -346,14 +347,15 @@ def abreOverviewAdministrador(connection, overviewWindow, usuario):
     cria_label(fCircuitos, "Quantidade de corridas por circuito", 12, "normal").pack(fill="x")
 
     # Cria a tabela de circuitos.
-    circuitosTabela = ttk.Treeview(fCircuitos, columns=("Circuito", "Corridas"), show="headings")
-    circuitosTabela.heading("Circuito", text="Circuito")
-    circuitosTabela.heading("Corridas", text="Qtd. Corridas")
+    circuitosTabela = cria_tabela(fCircuitos, ("Circuito", "Corridas", "Min. Voltas", "Max. Voltas", "Med. Voltas"), circuitos)
+    # circuitosTabela = ttk.Treeview(fCircuitos, columns=("Circuito", "Corridas", "Min. Voltas", "Max. Voltas", "Med. Voltas"), show="headings")
+    # circuitosTabela.heading("Circuito", text="Circuito")
+    # circuitosTabela.heading("Corridas", text="Qtd. Corridas")
 
-    if circuitos:
-        for tupla in circuitos:
-            nome, qtd = tupla
-            circuitosTabela.insert("", "end", values=(nome, qtd))
+    # if circuitos:
+    #     for tupla in circuitos:
+    #         nome, qtd, min, max, avg = tupla
+    #         circuitosTabela.insert("", "end", values=(nome, qtd, min, max, int(avg)))
 
     circuitosTabela.pack(padx = 10, pady = 5, fill="x")
 

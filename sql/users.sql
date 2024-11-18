@@ -208,6 +208,19 @@ FROM RACES LEFT JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
 GROUP BY (Circuits.circuitid, Circuits.name)
 ORDER BY Circuits.circuitid
 
+SELECT Circuits.name, COUNT(DISTINCT RACES.raceid), MIN(RESULTS.laps), MAX(RESULTS.laps)
+FROM RACES JOIN CIRCUITS ON Races.circuitid = Circuits.circuitid
+     JOIN RESULTS ON (RACES.raceid = RESULTS.raceid)
+GROUP BY (Circuits.name)
+ORDER BY Circuits.name;
+
+SELECT * FROM RESULTS LIMIT 40;
+SELECT * FROM CIRCUITS WHERE name = 'Adelaide Street Circuit';
+SELECT * 
+FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+WHERE RACES.circuitid = 29
+ORDER BY Laps ASC;
+
 
 SELECT Seasons.year, COUNT(DISTINCT Races.raceid)
 FROM Races LEFT JOIN Seasons ON Races.year = Seasons.year
