@@ -20,14 +20,15 @@ try:
         user = config['postgresql']['user'],
         password = config['postgresql']['password'],
         host = config['postgresql']['host'],
-        port = config['postgresql']['port']
+        port = config['postgresql']['port'],
+        connect_timeout=int(config['postgresql']['timeout_conn'])
     )
 
     login.abreLogin(connection)
 
 #Exceções(erro de conexao, imagem nao encontrada)
 except psycopg2.OperationalError as error:
-    print("Erro de conexão:", error)
+    print("CONNECTION_ERROR:", error)
 
 
 finally:
