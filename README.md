@@ -19,14 +19,14 @@
 1. [📅 **Tabelas do sistema**](#-colaboradores)
     - [Usuários](#usu%C3%A1rios)
     - [Logs de usuários](#logs-de-usu%C3%A1rio)
-2. [🌐 **Conexão com a base de dados**](#-conex%C3%A3o)
-3. [💻 **Telas**](#-telas)
+2. [🌐 **Conexão com a base de dados**](#conexão-com-a-base-de-dados)
+3. [💻 **Telas do sistema**](#-telas-do-sistema)
     - [Login](#login)
-    - [Overview]()
-    - [Relatórios]()
-4. [⚙️ **Configurações do sistema**]()
-    - [Layout]()
-    - [Navegação]()
+    - [Overview](#overview)
+    - [Relatórios](#relatórios)
+4. [⚙️ **Configurações do sistema**](#%EF%B8%8F-configurações-do-sistema)
+    - [Layout](#layout)
+    - [Navegação](#navegação)
 
 # 📅 *TABELAS DO SISTEMA*
 
@@ -272,7 +272,7 @@ def login():
 
 A tela de ***Overview*** apresenta informações detalhadas sobre o usuário logado, que pode ser um **Piloto**, uma **Escuderia** ou um **Administrador**. Dependendo do tipo de usuário, diferentes informações e funcionalidades são exibidas.
 
-#### Administrador
+### Administrador
 
 Apresenta informações para um usuário **Administrador**:
 
@@ -339,7 +339,7 @@ Apresenta informações para um usuário **Piloto**, como:
 * **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos;**
 * **Para cada ano de competição e cada circuito, a quantidade de vitórias.**
 
-### Relatórios
+## Relatórios
 
 A tela de ***Relatório*** permite ao usuário visualizar relatórios detalhados baseados no tipo de usuário logado.
 
