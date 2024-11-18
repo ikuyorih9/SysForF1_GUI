@@ -336,8 +336,63 @@ Apresenta informações para um usuário **Construtor**, como:
 Apresenta informações para um usuário **Piloto**, como:
 
 * **Primeiro e último ano em que há dados do piloto na base;**
-* **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos;**
-* **Para cada ano de competição e cada circuito, a quantidade de vitórias.**
+```
+CREATE OR REPLACE FUNCTION AtividadePiloto(id INTEGER) RETURNS TABLE 
+(PrimeiroAno INTEGER, 
+UltimoAno INTEGER) AS $$
+DECLARE
+    PrimeiroAno INTEGER;
+    UltimoAno INTEGER;
+BEGIN
+    SELECT DISTINCT year INTO PrimeiroAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year ASC
+    LIMIT 1;
+
+SELECT DISTINCT year INTO UltimoAno
+    FROM RESULTS JOIN RACES ON RESULTS.raceid = RACES.raceid
+    WHERE RESULTS.driverid = id
+    ORDER BY year DESC
+    LIMIT 1;
+
+    RETURN QUERY SELECT PrimeiroAno, UltimoAno;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+* **Para cada ano de competição e cada circuito, a quantidade de pontos obtidos e vitórias;**
+```
+CREATE OR REPLACE FUNCTION InfoCompeticoes(id INTEGER)
+RETURNS TABLE (
+    ano INTEGER,
+    circuito TEXT,
+    total_pontos NUMERIC,
+    total_vitorias INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        Races.year AS ano,
+        Circuits.name AS circuito,
+        SUM(Results.points)::NUMERIC AS total_pontos, 
+        SUM(CASE WHEN Results.position = 1 THEN 1 ELSE 0 END)::INTEGER AS total_vitorias
+    FROM 
+        Results
+    JOIN 
+        Races ON Results.raceid = Races.raceid
+    JOIN 
+        Circuits ON Races.circuitid = Circuits.circuitid
+    WHERE 
+        Results.driverid = id
+    GROUP BY 
+        Races.year, Circuits.name
+    ORDER BY 
+        Races.year, Circuits.name;
+END;
+$$ LANGUAGE plpgsql;
+
+```
 
 ## Relatórios
 
